@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Settings;
 
-use App\Exceptions\AppException;
 use App\Exceptions\UserManagementException;
 use App\Models\User;
 use App\Providers\UserServiceProvider;
@@ -27,7 +26,7 @@ class UsersIndex extends Component
     public $loadedUser;
     public $username;
     public $name;
-    public $role;
+    public $role = User::ROLE_USER;
     public $password;
     public $password_confirmation;
     public $user;
@@ -38,7 +37,10 @@ class UsersIndex extends Component
     public $newPassword;
     public $newPassword_confirmation;
 
-
+    public function __construct()
+    {
+        $this->userService = app(UserServiceProvider::class);
+    }
 
     public function updateThisUser($id)
     {
@@ -150,7 +152,7 @@ class UsersIndex extends Component
 
     public function addNewUser()
     {
-        $validatedData = $this->validate([
+        $this->validate([
             'username' => 'required|string|max:255|unique:users,username',
             'name' => 'required|string|max:255',
             'role' => 'required|in:' . implode(',', User::ROLES),
@@ -158,7 +160,7 @@ class UsersIndex extends Component
         ]);
 
         try {
-            $this->userService->createUser($validatedData['username'], $validatedData['name'], $validatedData['password'], $validatedData['role']);
+            $this->userService->createUser($this->username, $this->name, $this->password, $this->role);
             $this->alertSuccess('User added successfuly!');
         } catch (UserManagementException $e) {
             $this->alertError($e->getMessage());
@@ -168,11 +170,6 @@ class UsersIndex extends Component
             report($e);
             $this->alertError('Internal server error');
         }
-    }
-
-    public function mount()
-    {
-        $this->userService = app(UserServiceProvider::class);
     }
 
     public function render()

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Exceptions\AppException;
 use App\Models\AppLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\UnauthorizedException;
@@ -22,6 +23,7 @@ class AuthServiceProvider extends ServiceProvider
         if (!Hash::check($password, $user->password)) {
             throw new UnauthorizedException('Invalid credentials');
         }
+        Auth::login($user);
         AppLog::info('User logged in', 'User ' . $user->name . ' logged in', $user);
         return $user;
     }
@@ -31,7 +33,9 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(AuthServiceProvider::class);
+        $this->app->singleton(AuthServiceProvider::class, function ($app) {
+            return new AuthServiceProvider($app);
+        });
     }
 
     /**
@@ -39,6 +43,6 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
+ 
     }
 }

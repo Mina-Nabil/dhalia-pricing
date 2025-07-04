@@ -120,7 +120,9 @@ class UserServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(UserServiceProvider::class);
+        $this->app->singleton(UserServiceProvider::class, function ($app) {
+            return new UserServiceProvider($app);
+        });
     }
 
     /**

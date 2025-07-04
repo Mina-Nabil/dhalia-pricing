@@ -80,262 +80,6 @@
             <div class="sidebar-menus bg-white dark:bg-slate-800 py-2 px-4 h-[calc(100%-80px)] overflow-y-auto z-50"
                 id="sidebar_menus">
                 <ul class="sidebar-menu">
-
-                    <li>
-                        <a href="{{ url('/calendar') }}"
-                            class="navItem {{ request()->routeIs('calendar') ? 'active' : '' }}">
-                            <span class="flex items-center">
-                                <span>Calendar</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Payroll</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\Payroll\Payroll::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('payrolls.index') ? 'active' : '' }}"
-                                        href="{{ url('/payrolls') }}">Payrolls</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Payroll\Payroll::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('payrolls.create') ? 'active' : '' }}"
-                                        href="{{ url('/payrolls/create') }}">
-                                        Create Payroll</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Payroll\Payroll::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('submit-attendance') ? 'active' : '' }}"
-                                        href="{{ url('/payrolls/submit-attendance') }}">
-                                        Submit Attendance</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Attendance\Attendance::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('attendance.index') ? 'active' : '' }}"
-                                        href="{{ url('/attendance') }}">
-                                        Attendance Records</a>
-                                </li>
-                            @endcan
-
-                            @can('viewAny', App\Models\Attendance\BusArrival::class)
-                                <li class="">
-                                    <a href="javascript:void(0)" class="navItem">
-                                        <span class="flex items-center">
-                                            <span>Bus Arrivals</span>
-                                        </span>
-                                        <iconify-icon class="icon-arrow"
-                                            icon="heroicons-outline:chevron-right"></iconify-icon>
-                                    </a>
-                                    <ul class="sidebar-submenu">
-                                        <li>
-                                            <a class="{{ request()->routeIs('attendance.bus-arrivals') ? 'active' : '' }}"
-                                                href="{{ url('/attendance/bus-arrivals') }}">
-                                                Upload Bus Arrivals</a>
-                                        </li>
-                                        <li>
-                                            <a class="{{ request()->routeIs('attendance.bus-arrivals.records') ? 'active' : '' }}"
-                                                href="{{ url('/attendance/bus-arrivals/records') }}">
-                                                Bus Arrival Records</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            @endcan
-                        </ul>
-                    </li>
-
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Employee Requests</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\Benefits\Payrolls\AppliedVacation::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('applied-vacation.index') ? 'active' : '' }}"
-                                        href="{{ url('/attendance/applied-vacation') }}">
-                                        Applied Vacations</a>
-                                </li>
-                            @endcan
-                            {{-- @can('viewAny', App\Models\Attendance\Attendance::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('overtime.index') ? 'active' : '' }}"
-                                        href="{{ url('/attendance/overtime') }}">
-                                        Overtime Records</a>
-                                </li>
-                            @endcan --}}
-                            @can('applyForAny', App\Models\Benefits\Payrolls\AppliedVacation::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('employee.apply-for-vacation') ? 'active' : '' }}"
-                                        href="{{ route('employee.apply-for-vacation') }}">
-                                        Add a Vacation</a>
-                                </li>
-                            @endcan
-
-                            <li>
-                                <a href="{{ route('employees.requests.hr-letters.index') }}"
-                                    class="navItem {{ request()->routeIs('employees.requests.hr-letters.index') ? 'active' : '' }}">
-                                    HR Letter Requests
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('employees.requests.overtime.index') }}"
-                                    class="navItem {{ request()->routeIs('employees.requests.overtime.index') ? 'active' : '' }}">
-                                    Overtime Requests
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Compensation Packages</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\Benefits\Configurations\SalaryGrade::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('benefits.configurations') ? 'active' : '' }}"
-                                        href="{{ url('/benefits/configurations') }}">Employees</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Benefits\Configurations\SalaryGrade::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('benefits.packages') ? 'active' : '' }}"
-                                        href="{{ url('/benefits/packages') }}">
-                                        Grading System</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Benefits\Configurations\VacationPackage::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('benefits.vacation-packages') ? 'active' : '' }}"
-                                        href="{{ url('/benefits/vacation-packages') }}">
-                                        Vacation Packages</a>
-                                </li>
-                            @endcan
-
-                        </ul>
-                    </li>
-
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Documents</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('viewDashboard', App\Models\Personel\Employee::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('employees.dashboard') ? 'active' : '' }}"
-                                        href="{{ route('employees.dashboard') }}">Dashboard</a>
-                                </li>
-                            @endcan
-                            @can('viewMissingDocReport', App\Models\Personel\Employee::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('employees.reports.missing-documents') ? 'active' : '' }}"
-                                        href="{{ route('employees.reports.missing-documents') }}">Document Status</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Personel\Employee::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('employees') ? 'active' : '' }}"
-                                        href="{{ route('employees') }}">Employees</a>
-                                </li>
-                            @endcan
-                            @can('create', App\Models\Personel\Employee::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('employees.create') ? 'active' : '' }}"
-                                        href="{{ route('employees.create') }}">Create
-                                        Employee</a>
-                                </li>
-                            @endcan
-                        </ul>
-                    </li>
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Recruitment</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('create', App\Models\Recruitment\Applicants\Applicant::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('applicants.create') ? 'active' : '' }}"
-                                        href="{{ url('/recruitment/applicants/create') }}">New Applicant</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Recruitment\Applicants\Applicant::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('recruitment.applicants') ? 'active' : '' }}"
-                                        href="{{ url('/recruitment/applicants') }}">Applicants</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Heirarchy\Position::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('recruitment.vacancies') ? 'active' : '' }}"
-                                        href="{{ url('/recruitment/vacancies') }}">Vacancies</a>
-                                </li>
-                            @endcan
-
-                            @can('viewAny', App\Models\Recruitment\BaseQuestion::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('recruitment.base-questions') ? 'active' : '' }}"
-                                        href="{{ url('/recruitment/base-questions') }}">Base Questions</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Recruitment\Applicants\Channel::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('settings.channels') ? 'active' : '' }}"
-                                        href="{{ url('/settings/channels') }}">Channels</a>
-                                </li>
-                            @endcan
-
-
-                        </ul>
-                    </li>
-
-                    <li class="">
-                        <a href="javascript:void(0)" class="navItem">
-                            <span class="flex items-center">
-                                <span>Heirarchy</span>
-                            </span>
-                            <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
-                        </a>
-                        <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\Heirarchy\Position::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('hierarchy.positions') ? 'active' : '' }}"
-                                        href="{{ url('/hierarchy/positions') }}">Positions</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Heirarchy\Position::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('hierarchy.tree') ? 'active' : '' }}"
-                                        href="{{ url('/hierarchy/tree') }}">Organization</a>
-                                </li>
-                            @endcan
-
-                        </ul>
-                    </li>
-
                     <li class="">
                         <a href="javascript:void(0)" class="navItem">
                             <span class="flex items-center">
@@ -344,68 +88,36 @@
                             <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
                         </a>
                         <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\Users\User::class)
+                            @can('viewAny', App\Models\User::class)
                                 <li>
-                                    <a class="{{ request()->routeIs('settings.users') ? 'active' : '' }}"
+                                    <a class="{{ request()->routeIs('users.index') ? 'active' : '' }}"
                                         href="{{ url('/settings/users') }}">Users</a>
                                 </li>
                             @endcan
-                            @can('viewAny', App\Models\Base\Area::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('settings.areas') ? 'active' : '' }}"
-                                        href="{{ url('/settings/areas') }}">Areas</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Base\InsuranceOffice::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('insurance-offices') ? 'active' : '' }}"
-                                        href="{{ url('/insurance-offices') }}">Insurance Offices</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Base\Bank::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('banks') ? 'active' : '' }}"
-                                        href="{{ url('/banks') }}">Banks</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Base\DocManager::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('document-manager') ? 'active' : '' }}"
-                                        href="{{ url('/document-manager') }}">Document Manager</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Attendance\Bus::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('buses') ? 'active' : '' }}"
-                                        href="{{ url('/buses') }}">Buses</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Base\Location::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('hierarchy.locations') ? 'active' : '' }}"
-                                        href="{{ url('/hierarchy/locations') }}">Locations</a>
-                                </li>
-                            @endcan
-                            @can('viewAny', App\Models\Attendance\PublicHoliday::class)
-                                <li>
-                                    <a class="{{ request()->routeIs('public-holidays.index') ? 'active' : '' }}"
-                                        href="{{ route('public-holidays.index') }}">Public Holidays</a>
-                                </li>
-                            @endcan
-                            @if (Auth::user()->is_admin)
-                                <li>
-                                    <a class="{{ request()->routeIs('import-data') ? 'active' : '' }}"
-                                        href="{{ route('import-data') }}">Import
-                                        Data</a>
-                                </li>
-                            @endif
-                            @can('viewAny', App\Models\Settings\AppLog::class)
+                            @can('viewAny', App\Models\AppLog::class)
                                 <li>
                                     <a class="{{ request()->routeIs('app-logs') ? 'active' : '' }}"
-                                        href="{{ url('/app-logs') }}">App
-                                        Logs</a>
+                                        href="{{ url('/settings/app-logs') }}">App Logs</a>
                                 </li>
                             @endcan
+                                
+                           @auth
+                           <li>
+                            <a href="{{ url('/logout') }}"
+                                class="navItem">
+                                <span class="flex items-center">
+                                    <span>Logout</span>
+                                </span>
+                            </a>
+                           </li>
+                           @endauth
+                                
+                           
+                                
+                           
+                           
+                           
+                           
                         </ul>
                     </li>
 
