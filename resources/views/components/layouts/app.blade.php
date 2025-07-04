@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
-    <title>{{ isset($title) && is_string($title) ? 'HiRe • ' . $title : 'HiRe' }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo/hire-favicon.png') }}">
+    <title>Pricing</title>
+    {{-- <link rel="icon" type="image/png" href="{{ asset('images/logo/fav-icon.png') }}"> --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -48,9 +48,9 @@
             <div id="bodyOverlay"
                 class="w-screen h-screen fixed top-0 bg-slate-900 bg-opacity-50 backdrop-blur-sm z-10 hidden"></div>
             <div class="logo-segment">
-                <a class="flex items-center" href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo/hire-logo-wide.png') }}" class="black_logo" alt="logo">
-                    <img src="{{ asset('images/logo/hire-logo-wide-white.png') }}" class="white_logo" alt="logo">
+                <a class="flex items-center p-2" href="{{ url('/') }}">
+                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo" alt="logo">
+                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo" alt="logo">
                     {{-- <span
                         class="ltr:ml-3 rtl:mr-3 text-xl font-Inter font-bold text-slate-900 dark:text-white">Wise
                         Ins.</span> --}}
@@ -92,6 +92,12 @@
                                 <li>
                                     <a class="{{ request()->routeIs('users.index') ? 'active' : '' }}"
                                         href="{{ url('/settings/users') }}">Users</a>
+                                </li>
+                            @endcan
+                            @can('viewAny', App\Models\Currency::class)
+                                <li>
+                                    <a class="{{ request()->routeIs('currencies.index') ? 'active' : '' }}"
+                                        href="{{ url('/settings/currencies') }}">Currencies</a>
                                 </li>
                             @endcan
                             @can('viewAny', App\Models\AppLog::class)
@@ -139,9 +145,9 @@
                             <div
                                 class="flex items-center md:space-x-4 space-x-2 xl:space-x-0 rtl:space-x-reverse vertical-box">
                                 <a href="{{ url('/') }}" class="mobile-logo xl:hidden inline-block">
-                                    <img src="{{ asset('images/logo/hire-icon.png') }}" class="black_logo"
+                                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo"
                                         alt="logo">
-                                    <img src="{{ asset('images/logo/hire-icon-white.png') }}" class="white_logo"
+                                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo"
                                         alt="logoo">
                                 </a>
 
@@ -151,15 +157,15 @@
                             <div class="items-center space-x-4 rtl:space-x-reverse horizental-box">
                                 <a href="{{ url('/') }}">
                                     <span class="xl:inline-block hidden">
-                                        <img src="{{ asset('admin/assets/images/logo/logo.svg') }}"
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
                                             class="black_logo " alt="logo">
-                                        <img src="{{ asset('admin/assets/images/logo/logo.svg') }}assets/images/logo/logo-white.svg"
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
                                             class="white_logo" alt="logo">
                                     </span>
                                     <span class="xl:hidden inline-block">
-                                        <img src="{{ asset('admin/assets/images/logo/logo-c.svg') }}"
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
                                             class="black_logo " alt="logo">
-                                        <img src="{{ asset('admin/assets/images/logo/logo-c-white.svg') }}"
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
                                             class="white_logo " alt="logo">
                                     </span>
                                 </a>

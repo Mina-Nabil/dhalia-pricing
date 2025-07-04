@@ -54,7 +54,18 @@ class User extends Authenticatable
         ];
     }
 
+    //attributes
+    public function getIsAdminAttribute()
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
 
+    public function getIsUserAttribute()
+    {
+        return $this->role === self::ROLE_USER;
+    }
+
+    //scopes
     public function scopeByStatus($query, $status)
     {
         return $query->where('is_active', $status);

@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
             'name' => 'dev',
             'username' => 'dev',
             'role' => User::ROLE_ADMIN,
+            'is_active' => true,
             'password' => Hash::make('dev@smart'),
         ]);
     }
