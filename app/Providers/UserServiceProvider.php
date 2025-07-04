@@ -24,17 +24,19 @@ class UserServiceProvider extends ServiceProvider
     }
 
 
-    public function getUsers($status = null, $role = null, $paginate = false)
+    public function getUsers($status = null, $role = null, ?int $paginate = null, $search = null)
     {
         Gate::authorize('view-user-list', User::class);
         $usersQuery = User::when($status !== null, function ($query) use ($status) {
             return $query->byStatus($status);
         })->when($role !== null, function ($query) use ($role) {
             return $query->byRole($role);
+        })->when($search !== null, function ($query) use ($search) {
+            return $query->bySearch($search);
         });
 
-        if ($paginate) {
-            return $usersQuery->paginate();
+        if ($paginate !== null) {
+            return $usersQuery->paginate($paginate);
         }
         AppLog::info('User list viewed', 'User list viewed', $usersQuery);
         return $usersQuery->get();
@@ -80,6 +82,22 @@ class UserServiceProvider extends ServiceProvider
         } catch (Exception $e) {
             report($e);
             throw new UserManagementException('Failed to update user');
+        }
+    }
+
+    public function updateUserPassword(User $user, $password)
+    {
+        Gate::authorize('update-user', $user);
+        if (!$password) {
+            throw new UserManagementException('Password is required');
+        }
+        try {
+            $user->update(['password' => Hash::make($password)]);
+            AppLog::info('User password updated', 'User ' . $user->name . ' password updated', $user);
+            return $user;
+        } catch (Exception $e) {
+            report($e);
+            throw new UserManagementException('Failed to update user password');
         }
     }
 
