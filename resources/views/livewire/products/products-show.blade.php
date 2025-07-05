@@ -65,6 +65,15 @@
 
             <!-- Total Cost Card -->
             <x-card title="Cost Breakdown">
+                <x-slot name="tools">
+                    @if (!$addCostMode)
+                        <button wire:click="toggleAddCostMode"
+                            class="btn btn-sm text-white hover:bg-white hover:text-slate-800">
+                            <iconify-icon class="text-lg" icon="heroicons:plus" />
+                        </button>
+                    @endif
+                </x-slot>
+
                 <div class="space-y-4">
                     <div class="flex justify-between items-center py-2">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Base Cost:</span>
@@ -77,18 +86,88 @@
                             <p
                                 class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wide">
                                 Additional Costs:</p>
-                            @foreach ($product->costs as $cost)
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-slate-600 dark:text-slate-400">{{ $cost->name }}:</span>
-                                    <span class="text-slate-900 dark:text-white font-medium">
-                                        @if ($cost->is_percentage)
-                                            {{ $cost->cost }}%
-                                        @else
-                                            ${{ number_format($cost->cost, 2) }}
+                            @foreach ($product->costs as $index => $cost)
+                                <div class="flex justify-between items-center py-2 group hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="text-slate-600 dark:text-slate-400">{{ $cost->name }}:</span>
+                                        <span class="text-slate-900 dark:text-white font-medium">
+                                            @if ($cost->is_percentage)
+                                                {{ $cost->cost }}%
+                                            @else
+                                                ${{ number_format($cost->cost, 2) }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <!-- Move Up Button -->
+                                        @if ($index > 0)
+                                            <button wire:click="moveProductCostUp({{ $cost->id }})"
+                                                class="action-btn text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
+                                                title="Move Up">
+                                                <iconify-icon icon="heroicons:chevron-up" class="text-sm"></iconify-icon>
+                                            </button>
                                         @endif
-                                    </span>
+                                        
+                                        <!-- Move Down Button -->
+                                        @if ($index < $product->costs->count() - 1)
+                                            <button wire:click="moveProductCostDown({{ $cost->id }})"
+                                                class="action-btn text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
+                                                title="Move Down">
+                                                <iconify-icon icon="heroicons:chevron-down" class="text-sm"></iconify-icon>
+                                            </button>
+                                        @endif
+                                        
+                                        <!-- Delete Button -->
+                                        <button wire:click="deleteProductCost({{ $cost->id }})"
+                                            class="action-btn text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                                            title="Delete Cost">
+                                            <iconify-icon icon="heroicons:trash" class="text-sm"></iconify-icon>
+                                        </button>
+                                    </div>
                                 </div>
                             @endforeach
+                        </div>
+                    @endif
+
+                    <!-- Add Cost Form -->
+                    @if ($addCostMode)
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <form wire:submit.prevent="addProductCost">
+                                <div class="space-y-4">
+                                    <x-text-input wire:model="costName" 
+                                                  label="Cost Name" 
+                                                  errorMessage="{{ $errors->first('costName') }}" 
+                                                  placeholder="e.g., Shipping, Tax, etc." />
+                                    
+                                    <x-text-input wire:model="costAmount" 
+                                                  label="Cost Amount" 
+                                                  type="number" 
+                                                  step="0.01" 
+                                                  errorMessage="{{ $errors->first('costAmount') }}" 
+                                                  placeholder="100.00" />
+                                    
+                                    <div class="flex items-center space-x-2">
+                                        <input type="checkbox" 
+                                               wire:model="isPercentage" 
+                                               id="isPercentage" 
+                                               class="form-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <label for="isPercentage" class="text-sm text-slate-600 dark:text-slate-400">
+                                            Is this a percentage?
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex space-x-3 mt-6">
+                                    <x-primary-button type="submit" 
+                                                      loadingFunction="addProductCost">
+                                        Add Cost
+                                    </x-primary-button>
+                                    <x-secondary-button wire:click="cancelAddCost" 
+                                                        type="button">
+                                        Cancel
+                                    </x-secondary-button>
+                                </div>
+                            </form>
                         </div>
                     @endif
 
@@ -160,5 +239,4 @@
             </x-card>
         </div>
     </div>
-</div>
 </div>

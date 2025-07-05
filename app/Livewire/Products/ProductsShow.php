@@ -5,8 +5,10 @@ namespace App\Livewire\Products;
 use App\Exceptions\ProductManagementException;
 use App\Models\Products\Product;
 use App\Models\Products\ProductCategory;
+use App\Models\Products\ProductCost;
 use App\Providers\ProductServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 
@@ -15,16 +17,22 @@ class ProductsShow extends Component
     use AlertFrontEnd;
 
     protected $productService;
-    
+
     public $product;
-    
+
     // Product form properties
     public $productName = '';
     public $selectedCategoryId = '';
     public $baseCost = '';
-    
-    // Edit mode flag
+
+    // Cost form properties
+    public $costName = '';
+    public $costAmount = '';
+    public $isPercentage = false;
+
+    // Edit mode flags
     public $editMode = false;
+    public $addCostMode = false;
 
     public function __construct()
     {
@@ -37,15 +45,6 @@ class ProductsShow extends Component
         $this->loadProductData();
     }
 
-    protected function rules()
-    {
-        return [
-            'productName' => 'required|string|max:255',
-            'selectedCategoryId' => 'required|exists:product_categories,id',
-            'baseCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
-        ];
-    }
-
     public function loadProductData()
     {
         $this->productName = $this->product->name;
@@ -56,7 +55,7 @@ class ProductsShow extends Component
     public function toggleEditMode()
     {
         $this->editMode = !$this->editMode;
-        
+
         if (!$this->editMode) {
             // Reset form data when exiting edit mode
             $this->loadProductData();
@@ -64,25 +63,123 @@ class ProductsShow extends Component
         }
     }
 
+    public function toggleAddCostMode()
+    {
+        $this->addCostMode = !$this->addCostMode;
+
+        if (!$this->addCostMode) {
+            // Reset cost form data when exiting add cost mode
+            $this->resetCostFormFields();
+            $this->resetValidation();
+        }
+    }
+
     public function updateProduct()
     {
-        $this->validate();
+        $this->validate([
+            'productName' => 'required|string|max:255',
+            'selectedCategoryId' => 'required|exists:product_categories,id',
+            'baseCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
+        ]);
 
         try {
             $this->productService->updateProduct($this->product, $this->productName, $this->selectedCategoryId, $this->baseCost);
-            
+
             // Refresh the product data
             $this->product = $this->productService->getProduct($this->product->id);
             $this->loadProductData();
-            
+
             $this->editMode = false;
             $this->alert('success', 'Product updated successfully');
-        } catch(AuthorizationException $e){
-            $this->alert('error', $e->getMessage());
-        }
-            catch (ProductManagementException $e) {
+        } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
         } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function addProductCost()
+    {
+        $this->validate([
+            'costName' => 'required|string|max:255',
+            'costAmount' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
+            'isPercentage' => 'boolean',
+        ]);
+
+        try {
+            $this->productService->addProductCost($this->product, $this->costName, $this->costAmount, $this->isPercentage);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+
+            $this->addCostMode = false;
+            $this->resetCostFormFields();
+            $this->mount($this->product->id);
+
+            $this->alert('success', 'Cost added successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function moveProductCostUp($costId)
+    {
+        try {
+            $productCost = ProductCost::findOrFail($costId);
+            $this->productService->moveProductCostUp($productCost);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+            $this->mount($this->product->id);
+            $this->alert('success', 'Cost moved up successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function moveProductCostDown($costId)
+    {
+        try {
+            $productCost = ProductCost::findOrFail($costId);
+            $this->productService->moveProductCostDown($productCost);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+            $this->mount($this->product->id);
+
+            $this->alert('success', 'Cost moved down successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function deleteProductCost($costId)
+    {
+        try {
+            $productCost = ProductCost::findOrFail($costId);
+            $this->productService->deleteProductCost($productCost);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+            $this->mount($this->product->id);
+            $this->alert('success', 'Cost deleted successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -94,10 +191,24 @@ class ProductsShow extends Component
         $this->resetValidation();
     }
 
+    public function cancelAddCost()
+    {
+        $this->addCostMode = false;
+        $this->resetCostFormFields();
+        $this->resetValidation();
+    }
+
+    private function resetCostFormFields()
+    {
+        $this->costName = '';
+        $this->costAmount = '';
+        $this->isPercentage = false;
+    }
+
     public function render()
     {
         $categories = $this->productService->getCategories();
-        
+
         return view('livewire.products.products-show', [
             'categories' => $categories,
         ]);

@@ -22,10 +22,10 @@ class ProductServiceProvider extends ServiceProvider
             ->withCount('products')
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('description', 'like', '%' . $search . '%');
+                    ->orWhere('description', 'like', '%' . $search . '%');
             })
             ->orderBy('name');
-        
+
         AppLog::info('Product categories list viewed', 'Categories loaded');
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
@@ -68,12 +68,12 @@ class ProductServiceProvider extends ServiceProvider
     public function deleteCategory(ProductCategory $category)
     {
         Gate::authorize('delete-product', $category);
-        
+
         // Check if category has products
         if ($category->products()->count() > 0) {
             throw new ProductManagementException('Cannot delete category with existing products');
-        }   
-        
+        }
+
         AppLog::info('Product category deleted', 'Category ' . $category->name . ' deleted', $category);
         try {
             $category->delete();
@@ -150,10 +150,9 @@ class ProductServiceProvider extends ServiceProvider
 
     public function addProductCost(Product $product, $name, $cost, $isPercentage)
     {
-        Gate::authorize('product-update', $product);
-        AppLog::info('Product cost created', 'Product cost ' . $name . ' created', $name);
+        Gate::authorize('update-product', $product);
         try {
-            $highestCost = $product->costs()->sortByDesc('sort_order')->first();
+            $highestCost = $product->costs()->withoutGlobalScope('sort_by_order')->orderByDesc('sort_order')->first();
             $sortOrder = $highestCost ? $highestCost->sort_order + 1 : 0;
             $product->costs()->create([
                 'name' => $name,
@@ -161,6 +160,7 @@ class ProductServiceProvider extends ServiceProvider
                 'is_percentage' => $isPercentage,
                 'sort_order' => $sortOrder
             ]);
+            AppLog::info('Product cost created', 'Product cost ' . $name . ' created', $product);
         } catch (Exception $e) {
             report($e);
             AppLog::error('Product cost creation failed', 'Product cost ' . $name . ' creation failed');
@@ -170,10 +170,10 @@ class ProductServiceProvider extends ServiceProvider
 
     public function deleteProductCost(ProductCost $productCost)
     {
-        Gate::authorize('product-update', $productCost->product);
-        AppLog::info('Product cost deleted', 'Product cost deleted for product ' . $productCost->product->name, $productCost);
+        Gate::authorize('update-product', $productCost->product);
         try {
             $productCost->delete();
+            AppLog::info('Product cost deleted', 'Product cost deleted for product ' . $productCost->product->name);
         } catch (Exception $e) {
             report($e);
             AppLog::error('Product cost deletion failed', 'Product cost ' . $productCost->name . ' deletion failed', $productCost);
@@ -183,14 +183,19 @@ class ProductServiceProvider extends ServiceProvider
 
     public function moveProductCostUp(ProductCost $productCost)
     {
-        Gate::authorize('product-update', $productCost->product);
-        AppLog::info('Product cost moved up', 'Product cost ' . $productCost->name . ' moved up', $productCost);
+        Gate::authorize('update-product', $productCost->product);
         try {
-            $higherProductCost = $productCost->product->costs()->where('sort_order', '<', $productCost->sort_order)->orderBy('sort_order', 'desc')->first();
+            $higherProductCost = $productCost->product->costs()
+                ->withoutGlobalScope('sort_by_order')
+                ->where('sort_order', '<', $productCost->sort_order)
+                ->orderByDesc('sort_order')
+                ->first();
             if ($higherProductCost) {
+                $tmpOrder = $productCost->sort_order;
                 $productCost->update(['sort_order' => $higherProductCost->sort_order]);
-                $higherProductCost->update(['sort_order' => $productCost->sort_order]);
+                $higherProductCost->update(['sort_order' => $tmpOrder]);
             }
+            AppLog::info('Product cost moved up', 'Product cost ' . $productCost->name . ' moved up', $productCost);
         } catch (Exception $e) {
             report($e);
             AppLog::error('Product cost move up failed', 'Product cost ' . $productCost->name . ' move up failed', $productCost);
@@ -200,21 +205,22 @@ class ProductServiceProvider extends ServiceProvider
 
     public function moveProductCostDown(ProductCost $productCost)
     {
-        Gate::authorize('product-update', $productCost->product);
+        Gate::authorize('update-product', $productCost->product);
         AppLog::info('Product cost moved down', 'Product cost ' . $productCost->name . ' moved down', $productCost);
         try {
             $lowerProductCost = $productCost->product->costs()->where('sort_order', '>', $productCost->sort_order)->orderBy('sort_order', 'asc')->first();
             if ($lowerProductCost) {
+                $tmpOrder = $productCost->sort_order;
                 $productCost->update(['sort_order' => $lowerProductCost->sort_order]);
-                $lowerProductCost->update(['sort_order' => $productCost->sort_order]);
+                $lowerProductCost->update(['sort_order' => $tmpOrder]);
             }
         } catch (Exception $e) {
             report($e);
             AppLog::error('Product cost move down failed', 'Product cost ' . $productCost->name . ' move down failed', $productCost);
             throw new ProductManagementException('Product cost move down failed');
         }
-        }
-    
+    }
+
     /**
      * Register services.
      */
