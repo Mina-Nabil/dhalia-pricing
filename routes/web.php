@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Auth\Login;
+use App\Livewire\Products\ProductsIndex;
+use App\Livewire\Products\ProductsShow;
 use App\Livewire\Settings\AppLogIndex;
 use App\Livewire\Settings\CurrenciesIndex;
 use App\Livewire\Settings\UsersIndex;
@@ -11,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['auth']], function () {
     // Route::get('/', Dashboard::class)->name('dashboard');
+    Route::get('/settings/products', ProductsIndex::class)->name('products.index');
+    Route::get('/settings/products/{product_id}', ProductsShow::class)->name('products.show');
 
     Route::get('/settings/users', UsersIndex::class)->name('users.index');
     Route::get('/settings/currencies', CurrenciesIndex::class)->name('currencies.index');

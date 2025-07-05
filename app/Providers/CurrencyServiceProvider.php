@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Exceptions\CurrencyManagementException;
+use App\Models\AppLog;
 use App\Models\Currency;
 use App\Policies\CurrencyPolicy;
 use Exception;
@@ -12,20 +13,28 @@ use Illuminate\Support\ServiceProvider;
 class CurrencyServiceProvider extends ServiceProvider
 {
 
-    public function getCurrencies()
+    public function getCurrencies($search = null, $paginate = 10)
     {
         Gate::authorize('view-currency-list');
-        return Currency::all();
+        AppLog::info('Currencies list viewed', 'Currencies loaded');
+        $query = Currency::when($search !== null, function ($q) use ($search) {
+            $q->bySearch($search);
+        })->orderBy('name');
+        return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
     public function getCurrency($id)
     {
-        return Currency::findOrFail($id);
+        $currency = Currency::findOrFail($id);
+        Gate::authorize('view-currency', $currency);
+        AppLog::info('Currency viewed', 'Currency ' . $id . ' viewed', $currency);
+        return $currency;
     }
 
     public function createCurrency($name, $rate, $code = null)
     {
         Gate::authorize('create-currency');
+        AppLog::info('Currency created', 'Currency ' . $name . ' created', $name);
         try {
             return Currency::create([
                 'name' => $name,
@@ -41,6 +50,7 @@ class CurrencyServiceProvider extends ServiceProvider
     public function updateCurrency(Currency $currency, $name, $code, $rate)
     {
         Gate::authorize('update-currency', $currency);
+        AppLog::info('Currency updated', 'Currency ' . $currency->name . ' updated', $currency);
         try {
             $currency->update([
                 'name' => $name,
@@ -56,6 +66,8 @@ class CurrencyServiceProvider extends ServiceProvider
 
     public function deleteCurrency(Currency $currency)
     {
+        Gate::authorize('delete-currency', $currency);
+        AppLog::info('Currency deleted', 'Currency ' . $currency->name . ' deleted', $currency);
         try {
             $currency->delete();
         } catch (Exception $e) {
@@ -63,9 +75,6 @@ class CurrencyServiceProvider extends ServiceProvider
             throw new CurrencyManagementException('Failed to delete currency');
         }
     }
-
-
-
 
     /**
      * Register services.

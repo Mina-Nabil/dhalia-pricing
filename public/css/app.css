@@ -7427,7 +7427,7 @@ textarea.form-control.is-invalid {
 }
 .text-white {
     --tw-text-opacity: 1;
-    color: rgb(255 255 255 / var(--tw-text-opacity));
+    color: rgb(255 255 255 / var(--tw-text-opacity)) !important;
 }
 .text-indigo-500 {
     --tw-text-opacity: 1;
@@ -18037,4 +18037,9 @@ ul.custom-list ul {
     background-color: black !important;
     color: white !important;
     position: sticky;
+}
+
+.card-header .btn.btn-sm {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
 }

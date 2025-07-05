@@ -127,15 +127,7 @@ class CurrenciesIndex extends Component
 
     public function render()
     {
-        $currencyService = app(CurrencyServiceProvider::class);
-        
-        $currencies = Currency::query()
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('code', 'like', '%' . $this->search . '%');
-            })
-            ->orderBy('name')
-            ->paginate(10);
+        $currencies = $this->currencyService->getCurrencies($this->search);
 
         return view('livewire.settings.currencies-index', [
             'currencies' => $currencies

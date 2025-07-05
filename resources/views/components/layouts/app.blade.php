@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <title>Pricing</title>
-    {{-- <link rel="icon" type="image/png" href="{{ asset('images/logo/fav-icon.png') }}"> --}}
+    <link rel="icon" type="image/png" href="{{ asset('images/logo/fav-icon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -80,6 +80,11 @@
             <div class="sidebar-menus bg-white dark:bg-slate-800 py-2 px-4 h-[calc(100%-80px)] overflow-y-auto z-50"
                 id="sidebar_menus">
                 <ul class="sidebar-menu">
+                    <li >
+                        <a class="navItem {{ request()->routeIs('products.index') ? 'active' : '' }}"
+                            href="{{ url('/settings/products') }}">Products</a>
+                    </li>
+
                     <li class="">
                         <a href="javascript:void(0)" class="navItem">
                             <span class="flex items-center">
@@ -105,29 +110,9 @@
                                     <a class="{{ request()->routeIs('app-logs') ? 'active' : '' }}"
                                         href="{{ url('/settings/app-logs') }}">App Logs</a>
                                 </li>
-                            @endcan
-                                
-                           @auth
-                           <li>
-                            <a href="{{ url('/logout') }}"
-                                class="navItem">
-                                <span class="flex items-center">
-                                    <span>Logout</span>
-                                </span>
-                            </a>
-                           </li>
-                           @endauth
-                                
-                           
-                                
-                           
-                           
-                           
-                           
+                            @endcan           
                         </ul>
                     </li>
-
-
                 </ul>
             </div>
         </div>
@@ -186,7 +171,7 @@
                             <div
                                 class="nav-tools flex items-center lg:space-x-5 space-x-3 rtl:space-x-reverse leading-0">
 
-                                <!-- BEGIN: Toggle Theme -->
+                                {{-- <!-- BEGIN: Toggle Theme -->
                                 <div>
                                     <button id="themeMood"
                                         class="h-[28px] w-[28px] lg:h-[32px] lg:w-[32px] lg:bg-gray-500-f7 bg-slate-50 dark:bg-slate-900 lg:dark:bg-slate-900 dark:text-white text-slate-900 cursor-pointer rounded-full text-[20px] flex flex-col items-center justify-center">
@@ -197,25 +182,8 @@
                                             id="sunIcon" icon="line-md:moon-filled-to-sunny-filled-loop-transition">
                                         </iconify-icon>
                                     </button>
-                                </div>
-                                <!-- END: TOggle Theme -->
+                                </div> --}}
 
-                                <!-- BEGIN: gray-scale Dropdown -->
-                                <div>
-                                    <button id="grayScale"
-                                        class="lg:h-[32px] lg:w-[32px] lg:bg-slate-100 lg:dark:bg-slate-900 dark:text-white text-slate-900 cursor-pointer     rounded-full text-[20px] flex flex-col items-center justify-center">
-                                        <iconify-icon class="text-slate-800 dark:text-white text-xl"
-                                            icon="mdi:paint-outline"></iconify-icon>
-                                    </button>
-                                </div>
-                                <!-- END: gray-scale Dropdown -->
-
-
-                                <!-- BEGIN: gray-scale Dropdown -->
-                                <!-- END: gray-scale Dropdown -->
-
-
-                                <!-- BEGIN: Notification Dropdown -->
 
                                 <!-- BEGIN: Profile Dropdown -->
                                 <!-- Profile DropDown Area -->
