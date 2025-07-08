@@ -6,6 +6,7 @@ use App\Exceptions\ProductManagementException;
 use App\Models\Products\Product;
 use App\Models\Products\ProductCategory;
 use App\Providers\ProductServiceProvider;
+use App\Providers\SpecServiceProvider;
 use App\Traits\AlertFrontEnd;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,6 +16,7 @@ class ProductsIndex extends Component
     use WithPagination, AlertFrontEnd;
 
     protected $productService;
+    protected $specService;
 
     public $search = '';
     
@@ -40,6 +42,7 @@ class ProductsIndex extends Component
     // Product form properties
     public $productName = '';
     public $selectedCategoryId = '';
+    public $selectedSpecId = '';
     public $baseCost = '';
     
     // Delete confirmation
@@ -54,6 +57,7 @@ class ProductsIndex extends Component
     {
         $this->authorize('viewAny', Product::class);
         $this->productService = app(ProductServiceProvider::class);
+        $this->specService = app(SpecServiceProvider::class);
     }
 
     protected function rules()
@@ -74,6 +78,7 @@ class ProductsIndex extends Component
                 'productName' => 'required|string|max:255',
                 'selectedCategoryId' => 'required|exists:product_categories,id',
                 'baseCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
+                'selectedSpecId' => 'required|exists:specs,id',
             ]);
         }
 
@@ -179,6 +184,7 @@ class ProductsIndex extends Component
             $this->productName = $product->name;
             $this->selectedCategoryId = $product->product_category_id;
             $this->baseCost = $product->base_cost;
+            $this->selectedSpecId = $product->spec_id;
             $this->productEditMode = true;
             $this->editProductModal = true;
         } catch (\Exception $e) {
@@ -192,10 +198,10 @@ class ProductsIndex extends Component
 
         try {
             if ($this->productEditMode) {
-                $this->productService->updateProduct($this->selectedProduct, $this->productName, $this->selectedCategoryId, $this->baseCost);
+                $this->productService->updateProduct($this->selectedProduct, $this->productName, $this->selectedCategoryId, $this->baseCost, $this->selectedSpecId);
                 $this->alert('success', 'Product updated successfully');
             } else {
-                $this->productService->createProduct($this->productName, $this->selectedCategoryId, $this->baseCost);
+                $this->productService->createProduct($this->productName, $this->selectedCategoryId, $this->baseCost, $this->selectedSpecId);
                 $this->alert('success', 'Product created successfully');
             }
 
@@ -288,11 +294,14 @@ class ProductsIndex extends Component
         $categories = $this->productService->getCategories($this->search);
         $products = $this->productService->getProducts($this->search, 10);
         $allCategories = $this->productService->getCategories();
+        $allSpecs = $this->specService->getSpecs();
+
 
         return view('livewire.products.products-index', [
             'categories' => $categories,
             'products' => $products,
             'allCategories' => $allCategories,
+            'allSpecs' => $allSpecs,
         ]);
     }
 }

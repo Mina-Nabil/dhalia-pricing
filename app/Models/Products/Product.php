@@ -2,11 +2,12 @@
 
 namespace App\Models\Products;
 
+use App\Models\Spec;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'product_category_id', 'base_cost'];
+    protected $fillable = ['name', 'product_category_id', 'base_cost', 'spec_id'];
 
     //attributes 
     public function getTotalCostAttribute()
@@ -52,5 +53,15 @@ class Product extends Model
     public function costs()
     {
         return $this->hasMany(ProductCost::class);
+    }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function spec()
+    {
+        return $this->belongsTo(Spec::class);
     }
 }

@@ -38,10 +38,16 @@
                     </div>
                     <div>
                         <label
+                            class="form-label font-medium text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wide">Spec</label>
+                        <p class="text-slate-900 dark:text-white text-lg font-medium mt-1">
+                            {{ $product->spec->name }}</p>
+                    </div>
+                    <div>
+                        <label
                             class="form-label font-medium text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wide">Base
                             Cost</label>
                         <p class="text-slate-900 dark:text-white text-lg font-semibold mt-1">
-                            ${{ number_format($product->base_cost, 2) }}</p>
+                            {{ number_format($product->base_cost, 2) }}EGP</p>
                     </div>
                     <div>
                         <label
@@ -78,7 +84,7 @@
                     <div class="flex justify-between items-center py-2">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Base Cost:</span>
                         <span
-                            class="font-semibold text-slate-900 dark:text-white text-lg">${{ number_format($product->base_cost, 2) }}</span>
+                            class="font-semibold text-slate-900 dark:text-white text-lg">{{ number_format($product->base_cost, 2) }}EGP</span>
                     </div>
 
                     @if ($product->costs->count() > 0)
@@ -87,36 +93,40 @@
                                 class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wide">
                                 Additional Costs:</p>
                             @foreach ($product->costs as $index => $cost)
-                                <div class="flex justify-between items-center py-2 group hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <div
+                                    class="flex justify-between items-center py-2 group hover:bg-slate-100 dark:hover:bg-slate-800">
                                     <div class="flex items-center space-x-3">
                                         <span class="text-slate-600 dark:text-slate-400">{{ $cost->name }}:</span>
                                         <span class="text-slate-900 dark:text-white font-medium">
                                             @if ($cost->is_percentage)
                                                 {{ $cost->cost }}%
                                             @else
-                                                ${{ number_format($cost->cost, 2) }}
+                                                {{ number_format($cost->cost, 2) }}EGP
                                             @endif
                                         </span>
                                     </div>
-                                    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div
+                                        class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <!-- Move Up Button -->
                                         @if ($index > 0)
                                             <button wire:click="moveProductCostUp({{ $cost->id }})"
                                                 class="action-btn text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
                                                 title="Move Up">
-                                                <iconify-icon icon="heroicons:chevron-up" class="text-sm"></iconify-icon>
+                                                <iconify-icon icon="heroicons:chevron-up"
+                                                    class="text-sm"></iconify-icon>
                                             </button>
                                         @endif
-                                        
+
                                         <!-- Move Down Button -->
                                         @if ($index < $product->costs->count() - 1)
                                             <button wire:click="moveProductCostDown({{ $cost->id }})"
                                                 class="action-btn text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400"
                                                 title="Move Down">
-                                                <iconify-icon icon="heroicons:chevron-down" class="text-sm"></iconify-icon>
+                                                <iconify-icon icon="heroicons:chevron-down"
+                                                    class="text-sm"></iconify-icon>
                                             </button>
                                         @endif
-                                        
+
                                         <!-- Delete Button -->
                                         <button wire:click="deleteProductCost({{ $cost->id }})"
                                             class="action-btn text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
@@ -134,36 +144,28 @@
                         <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
                             <form wire:submit.prevent="addProductCost">
                                 <div class="space-y-4">
-                                    <x-text-input wire:model="costName" 
-                                                  label="Cost Name" 
-                                                  errorMessage="{{ $errors->first('costName') }}" 
-                                                  placeholder="e.g., Shipping, Tax, etc." />
-                                    
-                                    <x-text-input wire:model="costAmount" 
-                                                  label="Cost Amount" 
-                                                  type="number" 
-                                                  step="0.01" 
-                                                  errorMessage="{{ $errors->first('costAmount') }}" 
-                                                  placeholder="100.00" />
-                                    
+                                    <x-text-input wire:model="costName" label="Cost Name"
+                                        errorMessage="{{ $errors->first('costName') }}"
+                                        placeholder="e.g., Shipping, Tax, etc." />
+
+                                    <x-text-input wire:model="costAmount" label="Cost Amount" type="number"
+                                        step="0.01" errorMessage="{{ $errors->first('costAmount') }}"
+                                        placeholder="100.00" />
+
                                     <div class="flex items-center space-x-2">
-                                        <input type="checkbox" 
-                                               wire:model="isPercentage" 
-                                               id="isPercentage" 
-                                               class="form-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                                        <input type="checkbox" wire:model="isPercentage" id="isPercentage"
+                                            class="form-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
                                         <label for="isPercentage" class="text-sm text-slate-600 dark:text-slate-400">
                                             Is this a percentage?
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex space-x-3 mt-6">
-                                    <x-primary-button type="submit" 
-                                                      loadingFunction="addProductCost">
+                                    <x-primary-button type="submit" loadingFunction="addProductCost">
                                         Add Cost
                                     </x-primary-button>
-                                    <x-secondary-button wire:click="cancelAddCost" 
-                                                        type="button">
+                                    <x-secondary-button wire:click="cancelAddCost" type="button">
                                         Cancel
                                     </x-secondary-button>
                                 </div>
@@ -175,10 +177,98 @@
                         <div class="flex justify-between items-center py-2">
                             <span class="text-xl font-bold text-slate-900 dark:text-white">Total Cost:</span>
                             <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                                ${{ number_format($product->total_cost, 2) }}
+                                {{ number_format($product->total_cost, 2) }}EGP
                             </span>
                         </div>
                     </div>
+                </div>
+            </x-card>
+
+            <!-- Ingredients Card -->
+            <x-card title="Ingredients">
+                <x-slot name="tools">
+                    @if (!$addIngredientMode)
+                        <button wire:click="toggleAddIngredientMode"
+                            class="btn btn-sm text-white hover:bg-white hover:text-slate-800">
+                            <iconify-icon class="text-lg" icon="heroicons:plus" />
+                        </button>
+                    @endif
+                </x-slot>
+
+                <div class="space-y-4">
+                    @if ($product->ingredients->count() > 0)
+                        <div class="space-y-3">
+                            <p
+                                class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wide">
+                                Ingredients List:</p>
+                            @foreach ($product->ingredients as $ingredient)
+                                <div
+                                    class="flex justify-between items-center py-2 group hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    <div class="flex items-center space-x-3">
+                                        <span
+                                            class="text-slate-600 dark:text-slate-400">{{ $ingredient->name }}:</span>
+                                        <span class="text-slate-900 dark:text-white font-medium">
+                                            {{ number_format($ingredient->cost, 2) }}EGP
+                                        </span>
+                                    </div>
+                                    <div
+                                        class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <!-- Delete Button -->
+                                        <button wire:click="deleteProductIngredient({{ $ingredient->id }})"
+                                            class="action-btn text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
+                                            title="Delete Ingredient">
+                                            <iconify-icon icon="heroicons:trash" class="text-sm"></iconify-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-xl font-bold text-slate-900 dark:text-white">Total Ingredients:</span>
+                                <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
+                                    {{ number_format($product->ingredients_sum_cost, 2) }}EGP
+                                </span>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <div class="mb-4">
+                                <iconify-icon class="text-4xl text-slate-400 dark:text-slate-600"
+                                    icon="heroicons:cube"></iconify-icon>
+                            </div>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">
+                                No ingredients added yet.
+                            </p>
+                        </div>
+                    @endif
+
+                    <!-- Add Ingredient Form -->
+                    @if ($addIngredientMode)
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <form wire:submit.prevent="addProductIngredient">
+                                <div class="space-y-4">
+                                    <x-text-input wire:model="ingredientName" label="Ingredient Name"
+                                        errorMessage="{{ $errors->first('ingredientName') }}"
+                                        placeholder="e.g., Flour, Sugar, etc." />
+
+                                    <x-text-input wire:model="ingredientCost" label="Ingredient Cost" type="number"
+                                        step="0.01" errorMessage="{{ $errors->first('ingredientCost') }}"
+                                        placeholder="25.00" />
+                                </div>
+
+                                <div class="flex space-x-3 mt-6">
+                                    <x-primary-button type="submit" loadingFunction="addProductIngredient">
+                                        Add Ingredient
+                                    </x-primary-button>
+                                    <x-secondary-button wire:click="cancelAddIngredient" type="button">
+                                        Cancel
+                                    </x-secondary-button>
+                                </div>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             </x-card>
         </div>
@@ -206,6 +296,14 @@
                                 <option value="">Select a category</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </x-select>
+
+                            <x-select wire:model="selectedSpecId" label="Spec"
+                                errorMessage="{{ $errors->first('selectedSpecId') }}">
+                                <option value="">Select a spec</option>
+                                @foreach ($specs as $spec)
+                                    <option value="{{ $spec->id }}">{{ $spec->name }}</option>
                                 @endforeach
                             </x-select>
 

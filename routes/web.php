@@ -5,6 +5,8 @@ use App\Livewire\Products\ProductsIndex;
 use App\Livewire\Products\ProductsShow;
 use App\Livewire\Settings\AppLogIndex;
 use App\Livewire\Settings\CurrenciesIndex;
+use App\Livewire\Settings\PackingsIndex;
+use App\Livewire\Settings\SpecsIndex;
 use App\Livewire\Settings\UsersIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/settings/users', UsersIndex::class)->name('users.index');
     Route::get('/settings/currencies', CurrenciesIndex::class)->name('currencies.index');
+    Route::get('/settings/packings', PackingsIndex::class)->name('packings.index');
+    Route::get('/settings/specs', SpecsIndex::class)->name('specs.index');
 
     Route::get('/', UsersIndex::class)->name('users.index');
     Route::get('/settings/app-logs', AppLogIndex::class)->name('app-logs');

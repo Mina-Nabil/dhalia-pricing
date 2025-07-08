@@ -80,7 +80,7 @@
             <div class="sidebar-menus bg-white dark:bg-slate-800 py-2 px-4 h-[calc(100%-80px)] overflow-y-auto z-50"
                 id="sidebar_menus">
                 <ul class="sidebar-menu">
-                    <li >
+                    <li>
                         <a class="navItem {{ request()->routeIs('products.index') ? 'active' : '' }}"
                             href="{{ url('/settings/products') }}">Products</a>
                     </li>
@@ -93,24 +93,36 @@
                             <iconify-icon class="icon-arrow" icon="heroicons-outline:chevron-right"></iconify-icon>
                         </a>
                         <ul class="sidebar-submenu">
-                            @can('viewAny', App\Models\User::class)
+                            @can('view-user-list')
                                 <li>
                                     <a class="{{ request()->routeIs('users.index') ? 'active' : '' }}"
                                         href="{{ url('/settings/users') }}">Users</a>
                                 </li>
                             @endcan
-                            @can('viewAny', App\Models\Currency::class)
+                            @can('view-packing-list')
+                                <li>
+                                    <a class="{{ request()->routeIs('packings.index') ? 'active' : '' }}"
+                                        href="{{ url('/settings/packings') }}">Packings</a>
+                                </li>
+                            @endcan
+                            @can('view-currency-list')
                                 <li>
                                     <a class="{{ request()->routeIs('currencies.index') ? 'active' : '' }}"
                                         href="{{ url('/settings/currencies') }}">Currencies</a>
                                 </li>
                             @endcan
-                            @can('viewAny', App\Models\AppLog::class)
+                            @can('view-spec-list')
+                                <li>
+                                    <a class="{{ request()->routeIs('specs.index') ? 'active' : '' }}"
+                                        href="{{ url('/settings/specs') }}">Specs</a>
+                                </li>
+                            @endcan
+                            @can('view-app-logs')
                                 <li>
                                     <a class="{{ request()->routeIs('app-logs') ? 'active' : '' }}"
                                         href="{{ url('/settings/app-logs') }}">App Logs</a>
                                 </li>
-                            @endcan           
+                            @endcan
                         </ul>
                     </li>
                 </ul>
@@ -142,16 +154,16 @@
                             <div class="items-center space-x-4 rtl:space-x-reverse horizental-box">
                                 <a href="{{ url('/') }}">
                                     <span class="xl:inline-block hidden">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
-                                            class="black_logo " alt="logo">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
-                                            class="white_logo" alt="logo">
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo "
+                                            alt="logo">
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo"
+                                            alt="logo">
                                     </span>
                                     <span class="xl:hidden inline-block">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
-                                            class="black_logo " alt="logo">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}"
-                                            class="white_logo " alt="logo">
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo "
+                                            alt="logo">
+                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo "
+                                            alt="logo">
                                     </span>
                                 </a>
                                 <button

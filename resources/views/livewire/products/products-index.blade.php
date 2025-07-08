@@ -102,6 +102,7 @@
                                     <tr>
                                         <th scope="col" class="table-th">Name</th>
                                         <th scope="col" class="table-th">Category</th>
+                                        <th scope="col" class="table-th">Spec</th>
                                         <th scope="col" class="table-th">Base Cost</th>
                                         <th scope="col" class="table-th">Actions</th>
                                     </tr>
@@ -110,8 +111,9 @@
                                     class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                     @forelse($products as $product)
                                         <tr>
-                                            <td class="table-td">{{ $product->name }}</td>
                                             <td class="table-td">{{ $product->category->name }}</td>
+                                            <td class="table-td">{{ $product->spec->name }}</td>
+                                            <td class="table-td">{{ $product->name }}</td>
                                             <td class="table-td">{{ $product->base_cost }}</td>
                                             <td class="table-td">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
@@ -222,6 +224,14 @@
                     <option value="">Select a category</option>
                     @foreach ($allCategories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </x-select>
+
+                <x-select wire:model="selectedSpecId" label="Spec" 
+                    errorMessage="{{ $errors->first('selectedSpecId') }}">
+                    <option value="">Select a spec</option>
+                    @foreach ($allSpecs as $spec)
+                        <option value="{{ $spec->id }}">{{ $spec->name }}</option>
                     @endforeach
                 </x-select>
 

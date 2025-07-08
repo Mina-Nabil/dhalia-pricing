@@ -6,6 +6,8 @@ use App\Exceptions\ProductManagementException;
 use App\Models\Products\Product;
 use App\Models\Products\ProductCategory;
 use App\Models\Products\ProductCost;
+use App\Models\Products\Ingredient;
+use App\Models\Spec;
 use App\Providers\ProductServiceProvider;
 use App\Traits\AlertFrontEnd;
 use Exception;
@@ -23,12 +25,18 @@ class ProductsShow extends Component
     // Product form properties
     public $productName = '';
     public $selectedCategoryId = '';
+    public $selectedSpecId = '';
     public $baseCost = '';
 
     // Cost form properties
     public $costName = '';
     public $costAmount = '';
     public $isPercentage = false;
+
+    // Ingredient form properties
+    public $ingredientName = '';
+    public $ingredientCost = '';
+    public $addIngredientMode = false;
 
     // Edit mode flags
     public $editMode = false;
@@ -49,6 +57,7 @@ class ProductsShow extends Component
     {
         $this->productName = $this->product->name;
         $this->selectedCategoryId = $this->product->product_category_id;
+        $this->selectedSpecId = $this->product->spec_id;
         $this->baseCost = $this->product->base_cost;
     }
 
@@ -79,11 +88,12 @@ class ProductsShow extends Component
         $this->validate([
             'productName' => 'required|string|max:255',
             'selectedCategoryId' => 'required|exists:product_categories,id',
+            'selectedSpecId' => 'required|exists:specs,id',
             'baseCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
         ]);
 
         try {
-            $this->productService->updateProduct($this->product, $this->productName, $this->selectedCategoryId, $this->baseCost);
+            $this->productService->updateProduct($this->product, $this->productName, $this->selectedCategoryId, $this->baseCost, $this->selectedSpecId);
 
             // Refresh the product data
             $this->product = $this->productService->getProduct($this->product->id);
@@ -198,6 +208,70 @@ class ProductsShow extends Component
         $this->resetValidation();
     }
 
+    public function toggleAddIngredientMode()
+    {
+        $this->addIngredientMode = !$this->addIngredientMode;
+
+        if (!$this->addIngredientMode) {
+            // Reset ingredient form data when exiting add ingredient mode
+            $this->resetIngredientFormFields();
+            $this->resetValidation();
+        }
+    }
+
+    public function addProductIngredient()
+    {
+        $this->validate([
+            'ingredientName' => 'required|string|max:255',
+            'ingredientCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
+        ]);
+
+        try {
+            $this->productService->addProductIngredient($this->product, $this->ingredientName, $this->ingredientCost);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+
+            $this->addIngredientMode = false;
+            $this->resetIngredientFormFields();
+            $this->mount($this->product->id);
+
+            $this->alert('success', 'Ingredient added successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function deleteProductIngredient($ingredientId)
+    {
+        try {
+            $ingredient = Ingredient::findOrFail($ingredientId);
+            $this->productService->deleteProductIngredient($ingredient);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+            $this->mount($this->product->id);
+            $this->alert('success', 'Ingredient deleted successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function cancelAddIngredient()
+    {
+        $this->addIngredientMode = false;
+        $this->resetIngredientFormFields();
+        $this->resetValidation();
+    }
+
     private function resetCostFormFields()
     {
         $this->costName = '';
@@ -205,12 +279,20 @@ class ProductsShow extends Component
         $this->isPercentage = false;
     }
 
+    private function resetIngredientFormFields()
+    {
+        $this->ingredientName = '';
+        $this->ingredientCost = '';
+    }
+
     public function render()
     {
         $categories = $this->productService->getCategories();
+        $specs = app(\App\Providers\SpecServiceProvider::class)->getSpecs(null, false);
 
         return view('livewire.products.products-show', [
             'categories' => $categories,
+            'specs' => $specs,
         ]);
     }
 }

@@ -15,6 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            CurrencySeeder::class,
+            SpecSeeder::class,
+            PackingSeeder::class
         ]);
+
+        if (app()->environment('local')) {
+            $this->call([
+                CategorySeeder::class,
+                ProductSeeder::class,
+            ]);
+        }
     }
 }

@@ -7,6 +7,7 @@ use App\Models\AppLog;
 use App\Models\Products\Product;
 use App\Models\Products\ProductCategory;
 use App\Models\Products\ProductCost;
+use App\Models\Products\Ingredient;
 use App\Policies\ProductPolicy;
 use Exception;
 use Illuminate\Support\Facades\Gate;
@@ -89,29 +90,35 @@ class ProductServiceProvider extends ServiceProvider
     {
         Gate::authorize('view-product-list');
         $query = Product::query()
+            ->with('spec', 'category')
             ->when($search, function ($query) use ($search) {
                 $query->bySearch($search);
             })
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->byCategory($categoryId);
-            });
+            })
+            ->orderBy('product_category_id')
+            ->orderBy('spec_id')
+            ->orderBy('name');
         AppLog::info('Products list viewed', 'Products loaded');
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
     public function getProduct($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('spec', 'category', 'costs', 'ingredients')
+            ->withSum('ingredients', 'cost')
+            ->findOrFail($id);
         Gate::authorize('view-product', $product);
         AppLog::info('Product viewed', 'Product ' . $id . ' viewed', $product);
         return $product;
     }
 
-    public function createProduct($name, $categoryId, $baseCost)
+    public function createProduct($name, $categoryId, $baseCost, $specId)
     {
         Gate::authorize('create-product');
         try {
-            $product = Product::create(['name' => $name, 'product_category_id' => $categoryId, 'base_cost' => $baseCost]);
+            $product = Product::create(['name' => $name, 'product_category_id' => $categoryId, 'base_cost' => $baseCost, 'spec_id' => $specId]);
             AppLog::info('Product created', 'Product ' . $name . ' created', $product);
             return $product;
         } catch (Exception $e) {
@@ -121,11 +128,11 @@ class ProductServiceProvider extends ServiceProvider
         }
     }
 
-    public function updateProduct(Product $product, $name, $categoryId, $baseCost)
+    public function updateProduct(Product $product, $name, $categoryId, $baseCost, $specId)
     {
         Gate::authorize('update-product', $product);
         try {
-            $product->update(['name' => $name, 'product_category_id' => $categoryId, 'base_cost' => $baseCost]);
+            $product->update(['name' => $name, 'product_category_id' => $categoryId, 'base_cost' => $baseCost, 'spec_id' => $specId]);
             AppLog::info('Product updated', 'Product ' . $product->name . ' updated', $product);
         } catch (Exception $e) {
             report($e);
@@ -218,6 +225,35 @@ class ProductServiceProvider extends ServiceProvider
             report($e);
             AppLog::error('Product cost move down failed', 'Product cost ' . $productCost->name . ' move down failed', $productCost);
             throw new ProductManagementException('Product cost move down failed');
+        }
+    }
+
+    public function addProductIngredient(Product $product, $name, $cost)
+    {
+        Gate::authorize('update-product', $product);
+        try {
+            $product->ingredients()->create([
+                'name' => $name,
+                'cost' => $cost,
+            ]);
+            AppLog::info('Product ingredient created', 'Product ingredient ' . $name . ' created', $product);
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Product ingredient creation failed', 'Product ingredient ' . $name . ' creation failed');
+            throw new ProductManagementException('Product ingredient creation failed');
+        }
+    }
+
+    public function deleteProductIngredient(Ingredient $ingredient)
+    {
+        Gate::authorize('update-product', $ingredient->product);
+        try {
+            $ingredient->delete();
+            AppLog::info('Product ingredient deleted', 'Product ingredient deleted for product ' . $ingredient->product->name);
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Product ingredient deletion failed', 'Product ingredient ' . $ingredient->name . ' deletion failed', $ingredient);
+            throw new ProductManagementException('Product ingredient deletion failed');
         }
     }
 
