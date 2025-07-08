@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
 {
+    const MORPH_TYPE = 'client';
+
     protected $fillable = [
         'name',
         'phone',

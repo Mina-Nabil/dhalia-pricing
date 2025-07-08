@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Spec extends Model
 {
+    const MORPH_TYPE = 'spec';
+
     protected $fillable = ['name'];
 
     //scopes

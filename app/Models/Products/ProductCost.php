@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductCost extends Model
 {
+    const MORPH_TYPE = 'product_cost';
+
     protected $fillable = ['product_id', 'name', 'cost', 'is_percentage', 'sort_order'];
 
     //always sort by sort_order

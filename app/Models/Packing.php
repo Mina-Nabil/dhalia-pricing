@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Packing extends Model
 {
+    const MORPH_TYPE = 'packing';
+
     protected $fillable = ['name', 'cost', 'is_active'];
 
     //scopes

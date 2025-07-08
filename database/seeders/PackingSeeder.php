@@ -15,18 +15,18 @@ class PackingSeeder extends Seeder
     {
         $packings = [
             [
-                'name' => 'Standard Box',
+                'name' => 'Paper',
                 'cost' => 5.00,
                 'is_active' => true,
             ],
             [
-                'name' => 'Premium Gift Box',
-                'cost' => 12.50,
+                'name' => 'Poly',
+                'cost' => 6.00,
                 'is_active' => true,
             ],
             [
-                'name' => 'Eco-Friendly Package',
-                'cost' => 8.75,
+                'name' => 'Carton',
+                'cost' => 4.00,
                 'is_active' => true,
             ],
         ];

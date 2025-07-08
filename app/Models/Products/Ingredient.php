@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Ingredient extends Model
 {
+    const MORPH_TYPE = 'ingredient';
+
     protected $fillable = ['product_id', 'name', 'cost'];
 
     public function product()

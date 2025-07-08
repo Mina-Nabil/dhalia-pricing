@@ -15,6 +15,8 @@ class AppLog extends Model
 {
     use HasFactory;
 
+    const MORPH_TYPE = 'app_log';
+
     const LEVEL_INFO = 'info';
     const LEVEL_WARNING = 'warning';
     const LEVEL_ERROR = 'error';

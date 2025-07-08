@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Currency extends Model
 {
+    const MORPH_TYPE = 'currency';
+
     protected $fillable = ['name', 'code', 'rate'];
 
     //scopes

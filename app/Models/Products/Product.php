@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    const MORPH_TYPE = 'product';
+
     protected $fillable = ['name', 'product_category_id', 'base_cost', 'spec_id'];
 
     //attributes 
