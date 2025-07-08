@@ -81,9 +81,16 @@
                 id="sidebar_menus">
                 <ul class="sidebar-menu">
                     <li>
-                        <a class="navItem {{ request()->routeIs('products.index') ? 'active' : '' }}"
-                            href="{{ url('/settings/products') }}">Products</a>
+                        <a class="navItem {{ request()->routeIs('clients.index') ? 'active' : '' }}"
+                            href="{{ url('/clients') }}">Clients</a>
                     </li>
+
+                    @can('view-product-list')
+                        <li>
+                            <a class="navItem {{ request()->routeIs('products.index') ? 'active' : '' }}"
+                                href="{{ url('/settings/products') }}">Products</a>
+                        </li>
+                    @endcan
 
                     <li class="">
                         <a href="javascript:void(0)" class="navItem">
@@ -196,6 +203,12 @@
                                     </button>
                                 </div> --}}
 
+                                <button id="addClient"
+                                class="h-[28px] w-[28px] lg:h-[32px] lg:w-[32px] lg:bg-gray-500-f7 bg-slate-50 dark:bg-slate-900 lg:dark:bg-slate-900 dark:text-white text-slate-900 cursor-pointer rounded-full text-[20px] flex flex-col items-center justify-center">
+                                    <iconify-icon class="text-slate-800 dark:text-white text-xl dark:block hidden"
+                                        id="moonIcon" icon="heroicons:user-plus">
+                                    </iconify-icon>
+                                </button>
 
                                 <!-- BEGIN: Profile Dropdown -->
                                 <!-- Profile DropDown Area -->
@@ -305,6 +318,8 @@
                                 </div>
                                 <livewire:components.info-modal />
                                 <livewire:components.confirmation-modal />
+                                <livewire:components.add-client-modal />
+
                             </div>
                         </div>
                     </div>
@@ -374,6 +389,10 @@
             Livewire.on('copyUrl', (url) => {
                 navigator.clipboard.writeText(url.url);
                 showToast('URL copied to clipboard', 'success');
+            });
+
+            $('#addClient').click(function() {
+                Livewire.dispatch('openNewClient');
             });
         });
     </script>

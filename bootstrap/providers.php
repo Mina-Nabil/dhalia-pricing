@@ -3,6 +3,7 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
+    App\Providers\ClientServiceProvider::class,
     App\Providers\CurrencyServiceProvider::class,
     App\Providers\PackingServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
