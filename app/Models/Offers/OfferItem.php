@@ -6,6 +6,7 @@ use App\Models\Packing;
 use App\Models\Products\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OfferItem extends Model
 {
@@ -46,6 +47,30 @@ class OfferItem extends Model
         'total_profit',
     ];
 
+    const REQUIRED_FIELDS = [
+        'product_id',
+        'packing_id',
+        'quantity_in_tons',
+        'internal_cost',
+        'kg_per_package',
+        'one_package_cost',
+        'total_packing_cost',
+        'base_cost_currency',
+        'profit_margain',
+        'fob_price',
+        'freight_cost',
+        'freight_type',
+        'freight_total_cost',
+        'sterilization_cost',
+        'sterilization_type',
+        'sterilization_total_cost',
+        'agent_commission_cost',
+        'agent_commission_type',
+        'agent_commission_total_cost',
+        'total_costs',
+        'total_profit'
+    ];
+
     public function offer(): BelongsTo
     {
         return $this->belongsTo(Offer::class);
@@ -59,5 +84,10 @@ class OfferItem extends Model
     public function packing(): BelongsTo
     {
         return $this->belongsTo(Packing::class);
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(OfferItemIngredient::class);
     }
 }

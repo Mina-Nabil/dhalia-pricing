@@ -147,8 +147,8 @@
 
     <script>
         document.addEventListener('livewire:initialized', () => {
-            var start = moment();
-            var end = moment();
+            var start = moment('{{ $fromDate }}');
+            var end = moment('{{ $toDate }}');
 
             function cb(start, end) {
                 $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));

@@ -5,7 +5,7 @@ return [
     App\Providers\AuthServiceProvider::class,
     App\Providers\ClientServiceProvider::class,
     App\Providers\CurrencyServiceProvider::class,
-    App\Providers\OfferProvider::class,
+    App\Providers\OfferServiceProvider::class,
     App\Providers\PackingServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\SpecServiceProvider::class,

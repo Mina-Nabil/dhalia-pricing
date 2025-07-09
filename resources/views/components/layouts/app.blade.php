@@ -81,9 +81,14 @@
                 id="sidebar_menus">
                 <ul class="sidebar-menu">
                     <li>
+                        <a class="navItem {{ request()->routeIs('offers.index') ? 'active' : '' }}"
+                            href="{{ url('/offers') }}">Offers</a>
+                    </li>
+                    <li>
                         <a class="navItem {{ request()->routeIs('clients.index') ? 'active' : '' }}"
                             href="{{ url('/clients') }}">Clients</a>
                     </li>
+
 
                     @can('view-product-list')
                         <li>
@@ -204,7 +209,7 @@
                                 </div> --}}
 
                                 <button id="addClient"
-                                class="h-[28px] w-[28px] lg:h-[32px] lg:w-[32px] lg:bg-gray-500-f7 bg-slate-50 dark:bg-slate-900 lg:dark:bg-slate-900 dark:text-white text-slate-900 cursor-pointer rounded-full text-[20px] flex flex-col items-center justify-center">
+                                    class="h-[28px] w-[28px] lg:h-[32px] lg:w-[32px] lg:bg-gray-500-f7 bg-slate-50 dark:bg-slate-900 lg:dark:bg-slate-900 dark:text-white text-slate-900 cursor-pointer rounded-full text-[20px] flex flex-col items-center justify-center">
                                     <iconify-icon class="text-slate-800 dark:text-white text-xl dark:block hidden"
                                         id="moonIcon" icon="heroicons:user-plus">
                                     </iconify-icon>

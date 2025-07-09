@@ -38,7 +38,7 @@ class UserServiceProvider extends ServiceProvider
         if ($paginate !== null) {
             return $usersQuery->paginate($paginate);
         }
-        AppLog::info('User list viewed', 'User list viewed', $usersQuery);
+        AppLog::info('User list viewed', 'User list viewed');
         return $usersQuery->get();
     }
 

@@ -13,7 +13,7 @@ class OfferPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->is_admin;
     }
 
     /**
@@ -21,7 +21,7 @@ class OfferPolicy
      */
     public function view(User $user, Offer $offer): bool
     {
-        return false;
+        return $user->is_admin || $user->id === $offer->user_id;
     }
 
     /**
@@ -29,7 +29,7 @@ class OfferPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -45,22 +45,6 @@ class OfferPolicy
      */
     public function delete(User $user, Offer $offer): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Offer $offer): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Offer $offer): bool
-    {
-        return false;
+        return $user->is_admin || $user->id === $offer->user_id;
     }
 }

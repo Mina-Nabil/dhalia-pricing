@@ -2,7 +2,12 @@
 
 namespace App\Models\Offers;
 
+use App\Models\Clients\Client;
+use App\Models\Currency;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Offer extends Model
 {
@@ -44,4 +49,77 @@ class Offer extends Model
         'total_profit',
         'profit_percentage',
     ];
+
+    //scopes
+    public function scopeSearch($query, $search)
+    {
+        $words = explode(' ', $search);
+        foreach ($words as $word) {
+            $query->where('code', 'like', '%' . $word . '%')
+                ->orWhereHas('client', function ($query) use ($word) {
+                    $query->where('name', 'like', '%' . $word . '%')
+                        ->orWhere('phone', 'like', '%' . $word . '%');
+                })->orWhereHas('user', function ($query) use ($word) {
+                    $query->where('name', 'like', '%' . $word . '%')
+                        ->orWhere('username', 'like', '%' . $word . '%');
+                });
+        }
+        return $query;
+    }
+
+    public function scopeUsers($query, $user_ids)
+    {
+        return $query->whereIn('user_id', $user_ids);
+    }   
+
+    public function scopeClients($query, $client_ids)
+    {
+        return $query->whereIn('client_id', $client_ids);
+    }
+
+    public function scopeStatuses($query, $statuses)
+    {
+        return $query->whereIn('status', $statuses);
+    }
+
+    public function scopeDateFrom($query, $date_from)
+    {
+        return $query->where('created_at', '>=', $date_from);
+    }
+
+    public function scopeDateTo($query, $date_to)
+    {
+        return $query->where('created_at', '<=', $date_to);
+    }
+
+    //relations
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
+    public function duplicateOf(): BelongsTo
+    {
+        return $this->belongsTo(Offer::class, 'duplicate_of_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OfferItem::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(OfferComment::class);
+    }
 }
