@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- BEGIN: Theme CSS-->
     {{--
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -337,6 +338,7 @@
     <!-- scripts -->
     <script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
     <script src="{{ asset('js/rt-plugins.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 
 
@@ -387,19 +389,26 @@
 
         // Fix for Livewire v3 dispatched events
         document.addEventListener('livewire:initialized', () => {
-            Livewire.on('toastalert', (data) => {
-                showToast(data[0].message, data[0].type);
-            });
+        Livewire.on('toastalert', (data) => {
+            showToast(data[0].message, data[0].type);
+        });
 
-            Livewire.on('copyUrl', (url) => {
-                navigator.clipboard.writeText(url.url);
-                showToast('URL copied to clipboard', 'success');
-            });
+        Livewire.on('copyUrl', (url) => {
+            navigator.clipboard.writeText(url.url);
+            showToast('URL copied to clipboard', 'success');
+        });
 
-            $('#addClient').click(function() {
-                Livewire.dispatch('openNewClient');
+        $('#addClient').click(function() {
+            Livewire.dispatch('openNewClient');
+        });
+
+        $(".select2").select2().on("change", function() {
+                const values = $(this).val();
+                console.log(values);
+              
             });
         });
+
     </script>
 
     @yield('child_scripts')

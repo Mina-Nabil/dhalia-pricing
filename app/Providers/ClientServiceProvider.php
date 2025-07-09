@@ -38,6 +38,11 @@ class ClientServiceProvider extends ServiceProvider
         return $client;
     }
 
+    public function getClientsByIds($ids)
+    {
+        return Client::whereIn('id', $ids)->get();
+    }
+
     public function checkClientNameExists($name)
     {
         return Client::where('name', $name)->exists();

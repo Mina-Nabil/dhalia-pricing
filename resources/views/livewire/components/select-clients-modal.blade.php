@@ -1,0 +1,117 @@
+<div>
+    <!-- Modal Trigger Button -->
+    <button wire:click="openModal" class="btn inline-flex justify-center items-center btn-outline-primary w-full">
+        <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="heroicons:users"></iconify-icon>
+        Select Clients
+        @if (count($selectedClientIds) > 0)
+            <span class="ml-2 badge bg-primary-500 text-white">{{ count($selectedClientIds) }}</span>
+        @endif
+    </button>
+    <div class="flex space-x-2 mt-2">
+        @foreach ($selectedClientNames as $clientName)
+            <span class="badge bg-primary-500 text-white">{{ $clientName }}</span>
+        @endforeach
+    </div>
+    <!-- Modal -->
+    <x-modal wire:model="showModal" maxWidth="4xl">
+        <x-slot name="title">
+            Select Clients
+        </x-slot>
+
+        <x-slot name="content">
+            <!-- Search Bar -->
+            <div class="mb-4">
+                <label for="clientSearch" class="form-label">Search Clients</label>
+                <div class="relative">
+                    <input type="text" id="clientSearch" class="form-control pl-10"
+                        placeholder="Search by name, phone, or email..." wire:model.live.debounce.300ms="search">
+                    <span class="absolute left-3 top-3 text-slate-400">
+                        <iconify-icon icon="heroicons-solid:search"></iconify-icon>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-2 mb-4">
+                <button wire:click="selectAll" class="btn btn-sm btn-outline-primary">
+                    Select All
+                </button>
+                <button wire:click="deselectAll" class="btn btn-sm btn-outline-secondary">
+                    Deselect All
+                </button>
+                <div class="flex-1"></div>
+                <span class="text-sm text-slate-600">
+                    {{ count($selectedClientIds) }} selected
+                </span>
+            </div>
+
+            <!-- Clients Table -->
+            <div class="overflow-x-auto max-h-96">
+                <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+                    <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
+                        <tr>
+                            <th scope="col" class="table-th w-16">Select</th>
+                            <th scope="col" class="table-th">Name</th>
+                            <th scope="col" class="table-th">Phone</th>
+                            <th scope="col" class="table-th">Email</th>
+                            <th scope="col" class="table-th">Address</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
+                        @forelse($clients as $client)
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
+                                <td class="table-td text-center">
+                                    <button wire:click="toggleClient({{ $client->id }})"
+                                        class="btn btn-sm {{ $this->isSelected($client->id) ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                        @if ($this->isSelected($client->id))
+                                            <iconify-icon icon="heroicons:check"></iconify-icon>
+                                        @else
+                                            <iconify-icon icon="heroicons:plus"></iconify-icon>
+                                        @endif
+                                    </button>
+                                </td>
+                                <td class="table-td font-medium">{{ $client->name }}</td>
+                                <td class="table-td">{{ $client->phone ?? 'N/A' }}</td>
+                                <td class="table-td">{{ $client->email ?? 'N/A' }}</td>
+                                <td class="table-td">{{ Str::limit($client->address ?? 'N/A', 30) }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="table-td text-center text-slate-500">
+                                    @if ($search)
+                                        No clients found matching "{{ $search }}"
+                                    @else
+                                        No clients available
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if ($clients->hasPages())
+                <div class="mt-4">
+                    {{ $clients->links('vendor.livewire.simple-bootstrap') }}
+                </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <div class="flex justify-between items-center w-full">
+                <span class="text-sm text-slate-600">
+                    {{ count($selectedClientIds) }} client(s) selected
+                </span>
+                <div class="flex space-x-3">
+                    <x-secondary-button wire:click="closeModal">
+                        Cancel
+                    </x-secondary-button>
+                    <x-primary-button wire:click="applySelection">
+                        Apply Selection
+                    </x-primary-button>
+                </div>
+            </div>
+        </x-slot>
+    </x-modal>
+</div>

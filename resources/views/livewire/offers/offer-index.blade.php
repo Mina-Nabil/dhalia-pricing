@@ -58,37 +58,22 @@
             <div class="card mb-6">
                 <div class="card-body">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- User Filter -->
+                        <!-- Client Filter Modal -->
                         <div class="form-group">
-                            <label for="filterUserIds" class="form-label">Users</label>
-                            <select id="filterUserIds" class="form-control" wire:model.live="filterUserIds" multiple size="4">
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</small>
+                            <label class="form-label">Clients</label>
+                            <livewire:components.select-clients-modal :selectedClientIds="$filterClientIds" />
                         </div>
 
-                        <!-- Client Filter -->
+                        <!-- User Filter Modal -->
                         <div class="form-group">
-                            <label for="filterClientIds" class="form-label">Clients</label>
-                            <select id="filterClientIds" class="form-control" wire:model.live="filterClientIds" multiple size="4">
-                                @foreach ($clients as $client)
-                                    <option value="{{ $client->id }}">{{ $client->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</small>
+                            <label class="form-label">Users</label>
+                            <livewire:components.select-users-modal :selectedUserIds="$filterUserIds" />
                         </div>
 
-                        <!-- Status Filter -->
+                        <!-- Status Filter Modal -->
                         <div class="form-group">
-                            <label for="filterStatuses" class="form-label">Statuses</label>
-                            <select id="filterStatuses" class="form-control" wire:model.live="filterStatuses" multiple size="4">
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status }}">{{ ucfirst($status) }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple</small>
+                            <label class="form-label">Statuses</label>
+                            <livewire:components.select-statuses-modal :selectedStatuses="$filterStatuses" />
                         </div>
 
                         <!-- Sort Filter -->
@@ -117,7 +102,7 @@
 
                         <!-- Date To Filter -->
                         <div class="form-group">
-                            <label for="filterDateTo" class="form-label">Date To</label>
+                        <label for="filterDateTo" class="form-label">Date To</label>
                             <input type="date" id="filterDateTo" class="form-control" wire:model.live="filterDateTo">
                         </div>
 

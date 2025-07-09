@@ -41,7 +41,7 @@ class OfferIndex extends Component
 
     protected $paginationTheme = 'simple-bootstrap';
 
-    protected $listeners = ['deleteOffer'];
+    protected $listeners = ['deleteOffer', 'clientsSelected', 'usersSelected', 'statusesSelected'];
 
     public function __construct()
     {
@@ -106,11 +106,32 @@ class OfferIndex extends Component
         $this->showFilters = !$this->showFilters;
     }
 
+    public function clientsSelected($clientIds)
+    {
+        $this->filterClientIds = $clientIds;
+        $this->resetPage();
+    }
+
+    public function usersSelected($userIds)
+    {
+        $this->filterUserIds = $userIds;
+        $this->resetPage();
+    }
+
+    public function statusesSelected($statuses)
+    {
+        $this->filterStatuses = $statuses;
+        $this->resetPage();
+    }
+
     public function clearFilters()
     {
         $this->search = '';
         $this->filterUserIds = [];
         $this->filterClientIds = [];
+        $this->dispatch('clearClientsSelection');
+        $this->dispatch('clearUsersSelection');
+        $this->dispatch('clearStatusesSelection');
         $this->filterStatuses = [];
         $this->filterDateFrom = '';
         $this->filterDateTo = '';
@@ -119,6 +140,7 @@ class OfferIndex extends Component
         $this->sort = 'created_at';
         $this->sortDirection = 'desc';
         $this->resetPage();
+        $this->render();
     }
 
     public function sortBy($field)

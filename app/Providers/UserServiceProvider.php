@@ -42,6 +42,11 @@ class UserServiceProvider extends ServiceProvider
         return $usersQuery->get();
     }
 
+    public function getUsersByIds($ids)
+    {
+        return User::whereIn('id', $ids)->get();
+    }
+
     public function createUser($username, $name, $password, $role = User::ROLE_USER)
     {
 
