@@ -26,7 +26,7 @@ class ClientShow extends Component
     // Edit mode flag
     public $editMode = false;
 
-    public function __construct()
+    public function boot()
     {
         $this->clientService = app(ClientServiceProvider::class);
     }

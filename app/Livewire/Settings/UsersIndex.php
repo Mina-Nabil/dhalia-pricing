@@ -37,9 +37,14 @@ class UsersIndex extends Component
     public $newPassword;
     public $newPassword_confirmation;
 
-    public function __construct()
+    public function boot()
     {
         $this->userService = app(UserServiceProvider::class);
+    }
+
+    public function mount()
+    {
+        $this->authorize('viewAny', User::class);
     }
 
     public function updateThisUser($id)
@@ -62,6 +67,7 @@ class UsersIndex extends Component
         } catch (AuthorizationException $e) {
             $this->alertError('You are not authorized to update this user');
         } catch (Exception $e) {
+            report($e);
             $this->alertError('Internal server error');
         }
     }
@@ -140,7 +146,7 @@ class UsersIndex extends Component
             $this->alertError('You are not authorized to update this user');
         } catch (Exception $e) {
             report($e);
-            $this->alertError('Internal server error');
+            $this->alertError('Failed to update user');
         }
     }
 
@@ -168,7 +174,7 @@ class UsersIndex extends Component
             $this->alertError('You are not authorized to create a user');
         } catch (Exception $e) {
             report($e);
-            $this->alertError('Internal server error');
+            $this->alertError('Failed to create user');
         }
     }
 

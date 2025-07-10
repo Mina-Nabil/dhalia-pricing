@@ -2,16 +2,27 @@
     <!-- Modal Trigger Button -->
     <button wire:click="openModal" class="btn inline-flex justify-center items-center btn-outline-primary w-full">
         <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="heroicons:users"></iconify-icon>
-        Select Clients
-        @if (count($selectedClientIds) > 0)
-            <span class="ml-2 badge bg-primary-500 text-white">{{ count($selectedClientIds) }}</span>
+        @if ($mode == 'single')
+            @if (count($selectedClientIds) == 1)
+                @foreach ($selectedClientNames as $clientName)
+                    <span class="badge bg-primary-500 text-white">{{ $clientName }}</span>
+                @endforeach
+            @else
+                Select Client
+            @endif
+        @else
+            @if (count($selectedClientIds) > 0 && count($selectedClientNames) <= 4)
+                @foreach ($selectedClientNames as $clientName)
+                    <span class="badge bg-primary-500 text-white mr-2">{{ $clientName }}</span>
+                @endforeach
+            @elseif(count($selectedClientNames) > 4)
+                <span class="badge bg-primary-500 text-white mr-2">{{ count($selectedClientNames) }} Clients</span>
+            @else
+                Select Clients
+            @endif
         @endif
     </button>
-    <div class="flex space-x-2 mt-2">
-        @foreach ($selectedClientNames as $clientName)
-            <span class="badge bg-primary-500 text-white">{{ $clientName }}</span>
-        @endforeach
-    </div>
+
     <!-- Modal -->
     <x-modal wire:model="showModal" maxWidth="4xl">
         <x-slot name="title">
@@ -25,18 +36,18 @@
                 <div class="relative">
                     <input type="text" id="clientSearch" class="form-control pl-10"
                         placeholder="Search by name, phone, or email..." wire:model.live.debounce.300ms="search">
-                    <span class="absolute left-3 top-3 text-slate-400">
-                        <iconify-icon icon="heroicons-solid:search"></iconify-icon>
-                    </span>
+                
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex space-x-2 mb-4">
-                <button wire:click="selectAll" class="btn btn-sm btn-outline-primary">
-                    Select All
-                </button>
-                <button wire:click="deselectAll" class="btn btn-sm btn-outline-secondary">
+                @if ($mode == 'multiple')
+                    <button wire:click="selectAll" class="btn btn-sm btn-outline-primary">
+                        Select All
+                    </button>
+                @endif
+                <button wire:click="clearClientsSelection" class="btn btn-sm btn-outline-secondary">
                     Deselect All
                 </button>
                 <div class="flex-1"></div>

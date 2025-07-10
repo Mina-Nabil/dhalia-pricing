@@ -15,6 +15,7 @@ class SelectClientsModal extends Component
     public $selectedClientIds = [];
     public $originalSelectedClientIds = [];
     public $selectedClientNames = [];
+    public $mode = 'multiple';
 
     protected $clientService;
     protected $paginationTheme = 'simple-bootstrap';
@@ -54,8 +55,12 @@ class SelectClientsModal extends Component
 
     public function toggleClient($clientId)
     {
+        if ($this->mode == 'single') {
+            $this->selectedClientIds = [];
+        }
+
         if (in_array($clientId, $this->selectedClientIds)) {
-            $this->selectedClientIds = array_values(array_filter($this->selectedClientIds, function($id) use ($clientId) {
+            $this->selectedClientIds = array_values(array_filter($this->selectedClientIds, function ($id) use ($clientId) {
                 return $id != $clientId;
             }));
         } else {
@@ -65,6 +70,10 @@ class SelectClientsModal extends Component
 
     public function selectAll()
     {
+        if ($this->mode == 'single') {
+            $this->selectedClientIds = [];
+        }
+
         $clients = $this->clientService->getClients($this->search, paginate: false);
         foreach ($clients as $client) {
             if (!in_array($client->id, $this->selectedClientIds)) {
@@ -83,7 +92,11 @@ class SelectClientsModal extends Component
     {
         $this->originalSelectedClientIds = $this->selectedClientIds;
         $this->selectedClientNames = $this->clientService->getClientsByIds($this->selectedClientIds)->pluck('name')->toArray();
-        $this->dispatch('clientsSelected', $this->selectedClientIds);
+        if ($this->mode == 'single' && count($this->selectedClientIds) === 1) {
+            $this->dispatch('clientsSelected', $this->selectedClientIds[0]);
+        } else {
+            $this->dispatch('clientsSelected', $this->selectedClientIds);
+        }
         $this->closeModal();
     }
 
@@ -95,7 +108,7 @@ class SelectClientsModal extends Component
     public function render()
     {
         $clients = $this->clientService->getClients($this->search, paginate: 10);
-        
+
         return view('livewire.components.select-clients-modal', [
             'clients' => $clients,
         ]);

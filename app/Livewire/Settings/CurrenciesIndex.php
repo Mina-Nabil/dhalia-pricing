@@ -6,6 +6,8 @@ use App\Exceptions\CurrencyManagementException;
 use App\Models\Currency;
 use App\Providers\CurrencyServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -29,10 +31,14 @@ class CurrenciesIndex extends Component
 
     protected $listeners = ['deleteCurrency'];
 
-    public function __construct()
+    public function boot()
+    {
+        $this->currencyService = app(CurrencyServiceProvider::class);
+    }
+
+    public function mount()
     {
         $this->authorize('viewAny', Currency::class);
-        $this->currencyService = app(CurrencyServiceProvider::class);
     }
 
     protected function rules()
@@ -74,7 +80,12 @@ class CurrenciesIndex extends Component
             $this->rate = $currency->rate;
             $this->editMode = true;
             $this->setCurrencySec = true;
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (CurrencyManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'Failed to load currency data');
         }
     }
@@ -98,7 +109,10 @@ class CurrenciesIndex extends Component
             $this->setCurrencySec = false;
         } catch (CurrencyManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -111,7 +125,10 @@ class CurrenciesIndex extends Component
             $this->alert('success', 'Currency deleted successfully');
         } catch (CurrencyManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }

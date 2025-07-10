@@ -123,7 +123,7 @@ class Profile extends Component
             $this->alertError('You are not authorized to update this user');
         } catch (Exception $e) {
             report($e);
-            $this->alertError('Failed to update profile: ' . $e->getMessage());
+            $this->alertError('Failed to update profile');
         }
     }
 

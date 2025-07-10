@@ -13,10 +13,12 @@ use Illuminate\Support\ServiceProvider;
 class CurrencyServiceProvider extends ServiceProvider
 {
 
-    public function getCurrencies($search = null, $paginate = 10)
+    public function getCurrencies($search = null, $paginate = 10, $forDropdown = false)
     {
-        Gate::authorize('view-currency-list');
-        AppLog::info('Currencies list viewed', 'Currencies loaded');
+        if (!$forDropdown) {
+            Gate::authorize('view-currency-list');
+            AppLog::info('Currencies list viewed', 'Currencies loaded');
+        }
         $query = Currency::when($search !== null, function ($q) use ($search) {
             $q->bySearch($search);
         })->orderBy('name');

@@ -3,6 +3,7 @@
 use App\Livewire\Auth\Login;
 use App\Livewire\Clients\ClientIndex;
 use App\Livewire\Clients\ClientShow;
+use App\Livewire\Offers\OfferCreate;
 use App\Livewire\Offers\OfferIndex;
 use App\Livewire\Offers\OfferShow;
 use App\Livewire\Products\ProductsIndex;
@@ -23,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clients/{client_id}', ClientShow::class)->name('clients.show');
     
     Route::get('/offers', OfferIndex::class)->name('offers.index');
+    Route::get('/offers/create', OfferCreate::class)->name('offers.create');
     Route::get('/offers/{offer_id}', OfferShow::class)->name('offers.show');
 
     Route::get('/settings/products', ProductsIndex::class)->name('products.index');

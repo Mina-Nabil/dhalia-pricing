@@ -6,6 +6,8 @@ use App\Exceptions\PackingManagementException;
 use App\Models\Packing;
 use App\Providers\PackingServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,10 +30,14 @@ class PackingsIndex extends Component
 
     protected $listeners = ['deletePacking'];
 
-    public function __construct()
+    public function boot()
+    {
+        $this->packingService = app(PackingServiceProvider::class);
+    }
+
+    public function mount()
     {
         $this->authorize('viewAny', Packing::class);
-        $this->packingService = app(PackingServiceProvider::class);
     }
 
     protected function rules()
@@ -60,13 +66,17 @@ class PackingsIndex extends Component
     {
         try {
             $packing = $this->packingService->getPacking($packingId);
-            
+
             $this->selectedPacking = $packing;
             $this->name = $packing->name;
             $this->cost = $packing->cost;
             $this->editMode = true;
             $this->setPackingSec = true;
-        } catch (\Exception $e) {
+        } catch (PackingManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
             $this->alert('error', 'Failed to load packing data');
         }
     }
@@ -77,7 +87,7 @@ class PackingsIndex extends Component
 
         try {
             $packingService = app(PackingServiceProvider::class);
-            
+
             if ($this->editMode) {
                 $packingService->updatePacking($this->selectedPacking, $this->name, $this->cost);
                 $this->alert('success', 'Packing updated successfully');
@@ -90,7 +100,10 @@ class PackingsIndex extends Component
             $this->setPackingSec = false;
         } catch (PackingManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -101,12 +114,15 @@ class PackingsIndex extends Component
             $packing = $this->packingService->getPacking($packingId);
             $newStatus = !$packing->is_active;
             $this->packingService->setPackingStatus($packing, $newStatus);
-            
+
             $statusText = $newStatus ? 'activated' : 'deactivated';
             $this->alert('success', "Packing {$statusText} successfully");
         } catch (PackingManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -119,7 +135,10 @@ class PackingsIndex extends Component
             $this->alert('success', 'Packing deleted successfully');
         } catch (PackingManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }

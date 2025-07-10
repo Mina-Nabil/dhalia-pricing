@@ -38,13 +38,15 @@ class ClientIndex extends Component
 
     protected $listeners = ['deleteClient', 'refreshClientList'];
 
-    public function __construct()
+    public function boot()
     {
-        $this->authorize('view-client-any');
         $this->clientService = app(ClientServiceProvider::class);
     }
 
-
+    public function mount()
+    {
+        $this->authorize('view-client-any');
+    }
 
     public function updatingSearch()
     {

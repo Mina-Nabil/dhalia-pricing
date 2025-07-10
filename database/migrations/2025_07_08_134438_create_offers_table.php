@@ -82,6 +82,7 @@ return new class extends Migration
             $table->foreignIdFor(OfferItem::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->decimal('cost', 10, 2);
+            $table->decimal('percentage', 10, 2);
             $table->timestamps();
         });
 

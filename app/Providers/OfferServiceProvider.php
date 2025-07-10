@@ -41,11 +41,11 @@ class OfferServiceProvider extends ServiceProvider
     public function getOffers($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $paginate = 10, $sort = 'created_at', $sort_direction = 'desc')
     {
 
-        if(!in_array($sort, self::SORT_FIELDS)){
+        if (!in_array($sort, self::SORT_FIELDS)) {
             throw new OfferManagementException('Invalid sort field');
         }
 
-        if(!in_array($sort_direction, ['asc', 'desc'])){
+        if (!in_array($sort_direction, ['asc', 'desc'])) {
             throw new OfferManagementException('Invalid sort direction');
         }
 
@@ -57,38 +57,38 @@ class OfferServiceProvider extends ServiceProvider
         $query = Offer::query()->when(!$returnAll, function ($query) {
             $query->where('user_id', Auth::id());
         })
-        ->when($search, function ($query) use ($search) {
-            $query->search($search);
-        })
-        ->when(count($user_ids), function ($query) use ($user_ids) {
-            $query->users($user_ids);
-        })
-        ->when(count($client_ids), function ($query) use ($client_ids) {
-            $query->clients($client_ids);
-        })
-        ->when(count($statuses), function ($query) use ($statuses) {
-            $query->statuses($statuses);
-        })
-        ->when($date_from, function ($query) use ($date_from) {
-            $query->dateFrom($date_from);
-        })
-        ->when($date_to, function ($query) use ($date_to) {
-            $query->dateTo($date_to);
-        })
-        ->when($price_from, function ($query) use ($price_from) {
-            $query->priceFrom($price_from);
-        })
-        ->when($price_to, function ($query) use ($price_to) {
-            $query->priceTo($price_to);
-        })
-        ->orderBy($sort, $sort_direction);
+            ->when($search, function ($query) use ($search) {
+                $query->search($search);
+            })
+            ->when(count($user_ids), function ($query) use ($user_ids) {
+                $query->users($user_ids);
+            })
+            ->when(count($client_ids), function ($query) use ($client_ids) {
+                $query->clients($client_ids);
+            })
+            ->when(count($statuses), function ($query) use ($statuses) {
+                $query->statuses($statuses);
+            })
+            ->when($date_from, function ($query) use ($date_from) {
+                $query->dateFrom($date_from);
+            })
+            ->when($date_to, function ($query) use ($date_to) {
+                $query->dateTo($date_to);
+            })
+            ->when($price_from, function ($query) use ($price_from) {
+                $query->priceFrom($price_from);
+            })
+            ->when($price_to, function ($query) use ($price_to) {
+                $query->priceTo($price_to);
+            })
+            ->orderBy($sort, $sort_direction);
 
         AppLog::info('Offers list viewed', 'Offers loaded');
 
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
-    public function getOffer($id)
+    public function getOffer($id, $log = true)
     {
         $offer = Offer::find($id);
         if (!$offer) throw new OfferManagementException('Offer not found');
@@ -99,12 +99,12 @@ class OfferServiceProvider extends ServiceProvider
             'client',
             'items.product',
             'items.product.category',
+            'items.ingredients',
             'items.product.spec',
             'items.packing',
             'duplicateOf',
             'currency',
             'comments.user',
-            'ingredients'
         );
         AppLog::info('Offer loaded', "Offer $offer->code loaded", $offer);
         return $offer;
@@ -112,8 +112,8 @@ class OfferServiceProvider extends ServiceProvider
 
     public function createOffer($status, $clientId, $currencyId, $currencyRate, $offerItems, $duplicateOfId = null)
     {
+        Gate::authorize('create-offers');
         $this->checkOfferItemsArray($offerItems);
-
         $code = $this->getNextOfferCode($duplicateOfId);
 
         $totalTonnage = 0;
@@ -144,6 +144,7 @@ class OfferServiceProvider extends ServiceProvider
         $profitPercentage = ($totalProfit / $totalPrice) * 100;
 
         $offer = new Offer([
+            'user_id' => Auth::id(),
             'status' => $status,
             'duplicate_of_id' => $duplicateOfId,
             'client_id' => $clientId,
@@ -166,6 +167,12 @@ class OfferServiceProvider extends ServiceProvider
             DB::transaction(function () use ($offer, $offerItems) {
                 $offer->save();
                 $offer->items()->createMany($offerItems);
+                $offer->refresh();
+                foreach ($offer->items as $item) {
+                    if (isset($item['ingredients']) && is_array($item['ingredients']) && count($item['ingredients']) > 0) {
+                        $item->ingredients()->createMany($item['ingredients']);
+                    }
+                }
             });
         } catch (Exception $e) {
             report($e);
@@ -175,11 +182,26 @@ class OfferServiceProvider extends ServiceProvider
         return $offer;
     }
 
+    public function setOfferStatus($id, $status)
+    {
+        $offer = $this->getOffer($id);
+        Gate::authorize('update-offer', $offer);
+        $offer->status = $status;
+        try {
+            $offer->save();
+            AppLog::info('Offer status updated', "Offer $offer->code status updated to $status", $offer);
+            return $offer;
+        } catch (Exception $e) {
+            report($e);
+            throw new OfferManagementException('Failed to update offer status');
+        }
+    }
+
     public function deleteOffer($id)
     {
         $offer = $this->getOffer($id);
         Gate::authorize('delete-offer', $offer);
-        try{
+        try {
             DB::transaction(function () use ($offer) {
                 foreach ($offer->items as $item) {
                     $item->ingredients()->delete();
@@ -229,7 +251,7 @@ class OfferServiceProvider extends ServiceProvider
 
     private function getLatestOfferId()
     {
-        return Offer::latest()->first()->id;
+        return Offer::latest()->first()?->id ?? 0;
     }
 
     /**
@@ -250,7 +272,7 @@ class OfferServiceProvider extends ServiceProvider
         Gate::define('view-offers-list', [OfferPolicy::class, 'viewAny']);
         Gate::define('view-offer', [OfferPolicy::class, 'view']);
         Gate::define('create-offers', [OfferPolicy::class, 'create']);
-        Gate::define('update-offers', [OfferPolicy::class, 'update']);
+        Gate::define('update-offer', [OfferPolicy::class, 'update']);
         Gate::define('delete-offers', [OfferPolicy::class, 'delete']);
     }
 }

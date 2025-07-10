@@ -12,7 +12,7 @@
         </select>
 
         @if ($errorMessage)
-            <span class="font-Inter text-sm text-danger-500 pt-2 inline-block">{{ $errorMessage }}</span>
+            <span class="font-Inter text-sm text-danger-500 inline-block">{{ $errorMessage }}</span>
         @endif
 
     </div>

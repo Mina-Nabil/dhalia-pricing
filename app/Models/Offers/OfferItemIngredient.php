@@ -13,6 +13,7 @@ class OfferItemIngredient extends Model
         'offer_item_id',
         'name',
         'cost',
+        'percentage',
     ];
 
     public function offerItem(): BelongsTo  

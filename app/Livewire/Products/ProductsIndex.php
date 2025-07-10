@@ -8,6 +8,8 @@ use App\Models\Products\ProductCategory;
 use App\Providers\ProductServiceProvider;
 use App\Providers\SpecServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -53,11 +55,15 @@ class ProductsIndex extends Component
 
     protected $listeners = ['deleteProduct', 'deleteCategory'];
 
-    public function __construct()
+    public function boot()
     {
-        $this->authorize('viewAny', Product::class);
         $this->productService = app(ProductServiceProvider::class);
         $this->specService = app(SpecServiceProvider::class);
+    }
+
+    public function mount()
+    {
+        $this->authorize('viewAny', Product::class);
     }
 
     protected function rules()
@@ -108,7 +114,10 @@ class ProductsIndex extends Component
             $this->categoryDescription = $category->description;
             $this->categoryEditMode = true;
             $this->editCategoryModal = true;
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'Failed to load category data');
         }
     }
@@ -131,7 +140,10 @@ class ProductsIndex extends Component
             $this->closeEditCategorySec();
         } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -151,7 +163,10 @@ class ProductsIndex extends Component
             $this->alert('success', 'Category deleted successfully');
         } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -187,7 +202,10 @@ class ProductsIndex extends Component
             $this->selectedSpecId = $product->spec_id;
             $this->productEditMode = true;
             $this->editProductModal = true;
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'Failed to load product data');
         }
     }
@@ -210,7 +228,10 @@ class ProductsIndex extends Component
             $this->closeEditProductSec();
         } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -223,7 +244,10 @@ class ProductsIndex extends Component
             $this->alert('success', 'Product deleted successfully');
         } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }

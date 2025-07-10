@@ -13,13 +13,15 @@ use Illuminate\Support\ServiceProvider;
 class PackingServiceProvider extends ServiceProvider
 {
 
-    public function getPackings($search = null, $paginate = 10)
+    public function getPackings($search = null, $paginate = 10, $forDropdown = false)
     {
-        Gate::authorize('view-packing-list');
-        AppLog::info('Packings list viewed', 'Packings loaded');
         $query = Packing::when($search !== null, function ($q) use ($search) {
             $q->bySearch($search);
         })->orderBy('name');
+        if (!$forDropdown) {
+            Gate::authorize('view-packing-list');
+            AppLog::info('Packings list viewed', 'Packings loaded');
+        }
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 

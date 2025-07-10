@@ -16,9 +16,8 @@ use Illuminate\Support\ServiceProvider;
 class ProductServiceProvider extends ServiceProvider
 {
     // Category methods
-    public function getCategories($search = null, $paginate = false)
+    public function getCategories($search = null, $paginate = false, $forDropdown = false)
     {
-        Gate::authorize('view-product-list');
         $query = ProductCategory::query()
             ->withCount('products')
             ->when($search, function ($query) use ($search) {
@@ -26,8 +25,10 @@ class ProductServiceProvider extends ServiceProvider
                     ->orWhere('description', 'like', '%' . $search . '%');
             })
             ->orderBy('name');
-
-        AppLog::info('Product categories list viewed', 'Categories loaded');
+        if (!$forDropdown) {
+            Gate::authorize('view-product-list');
+            AppLog::info('Product categories list viewed', 'Categories loaded');
+        }
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
@@ -86,9 +87,8 @@ class ProductServiceProvider extends ServiceProvider
     }
 
     // Product methods
-    public function getProducts($search = null, $paginate = 10, $categoryId = null)
+    public function getProducts($search = null, $paginate = 10, $categoryId = null, $forDropdown = false)
     {
-        Gate::authorize('view-product-list');
         $query = Product::query()
             ->with('spec', 'category')
             ->when($search, function ($query) use ($search) {
@@ -100,7 +100,10 @@ class ProductServiceProvider extends ServiceProvider
             ->orderBy('product_category_id')
             ->orderBy('spec_id')
             ->orderBy('name');
-        AppLog::info('Products list viewed', 'Products loaded');
+        if (!$forDropdown) {
+            Gate::authorize('view-product-list');
+            AppLog::info('Products list viewed', 'Products loaded');
+        }
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
@@ -111,6 +114,12 @@ class ProductServiceProvider extends ServiceProvider
             ->findOrFail($id);
         Gate::authorize('view-product', $product);
         AppLog::info('Product viewed', 'Product ' . $id . ' viewed', $product);
+        return $product;
+    }
+
+    public function getSelectedProduct($id)
+    {
+        $product = Product::with('costs', 'ingredients')->findOrFail($id);
         return $product;
     }
 

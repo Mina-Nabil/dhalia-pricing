@@ -19,7 +19,7 @@ class Login extends Component
     public $username;
     public $password;
 
-    public function __construct()
+    public function boot()
     {
         $this->authService = app(AuthServiceProvider::class);
     }

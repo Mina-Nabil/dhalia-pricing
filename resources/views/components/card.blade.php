@@ -3,7 +3,7 @@
     <header class="card-header bg-slate-800 dark:bg-slate-900">
         <h4 class="text-white card-title  font-semibold">{{ $title }}</h4>
         @if (isset($tools))
-            <div >
+            <div class="card-tools">
                 {{ $tools }}
             </div>
         @endif

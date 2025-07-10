@@ -5,6 +5,8 @@ namespace App\Livewire\Components;
 use App\Exceptions\ClientManagementException;
 use App\Providers\ClientServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 
 class AddClientModal extends Component
@@ -91,9 +93,12 @@ class AddClientModal extends Component
             $this->resetClientFormFields();
             $this->dispatch('refreshClientList');
             $this->closeNewClientSec();
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
         } catch (ClientManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }

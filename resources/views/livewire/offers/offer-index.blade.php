@@ -7,8 +7,8 @@
             </h4>
         </div>
         <div class="flex sm:space-x-4 space-x-2 sm:justify-end items-center md:mb-6 mb-4 rtl:space-x-reverse">
-            @can('create', App\Models\Offers\Offer::class)
-                <button class="btn inline-flex justify-center btn-dark dark:bg-slate-700 dark:text-slate-300 m-1">
+            @can('create-offers')
+                <button class="btn inline-flex justify-center btn-dark dark:bg-slate-700 dark:text-slate-300 m-1" wire:click="goToOfferCreate">
                     <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:plus-bold"></iconify-icon>
                     Create Offer
                 </button>
@@ -25,9 +25,7 @@
                     <label for="search" class="form-label">Search</label>
                     <input type="text" class="form-control pl-10" placeholder="Using code, client name, client phone or user name..."
                         wire:model.live.debounce.300ms="search">
-                    <span class="absolute right-0 top-0 w-9 h-full flex items-center justify-center text-slate-400">
-                        <iconify-icon icon="heroicons-solid:search"></iconify-icon>
-                    </span>
+                 
                 </div>
             </div>
             <div class="flex space-x-2">

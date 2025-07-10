@@ -8,6 +8,8 @@ use App\Providers\OfferServiceProvider;
 use App\Providers\ClientServiceProvider;
 use App\Providers\UserServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -30,11 +32,11 @@ class OfferIndex extends Component
     public $filterPriceTo = '';
     public $sort = 'created_at';
     public $sortDirection = 'desc';
-    
+
     // UI state
     public $showFilters = false;
     public $deleteConfirmationModal = false;
-    
+
     // Selected items
     public $selectedOffer;
     public $itemIdToDelete = null;
@@ -43,12 +45,16 @@ class OfferIndex extends Component
 
     protected $listeners = ['deleteOffer', 'clientsSelected', 'usersSelected', 'statusesSelected'];
 
-    public function __construct()
+    public function boot()
     {
-        $this->authorize('viewAny', Offer::class);
         $this->offerService = app(OfferServiceProvider::class);
         $this->clientService = app(ClientServiceProvider::class);
         $this->userService = app(UserServiceProvider::class);
+    }
+
+    public function mount()
+    {
+        $this->authorize('viewAny', Offer::class);
     }
 
     public function updatingSearch()
@@ -159,6 +165,11 @@ class OfferIndex extends Component
         return redirect()->route('offers.show', $offerId);
     }
 
+    public function goToOfferCreate()
+    {
+        return redirect()->route('offers.create');
+    }
+
     public function confirmDeleteOffer($offerId)
     {
         $this->itemIdToDelete = $offerId;
@@ -172,7 +183,10 @@ class OfferIndex extends Component
             $this->alert('success', 'Offer deleted successfully');
         } catch (OfferManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -188,7 +202,7 @@ class OfferIndex extends Component
         if ($this->itemIdToDelete) {
             $this->deleteOffer($this->itemIdToDelete);
         }
-        
+
         $this->closeDeleteConfirmationModal();
     }
 

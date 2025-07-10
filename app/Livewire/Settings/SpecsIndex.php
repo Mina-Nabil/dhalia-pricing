@@ -6,6 +6,8 @@ use App\Exceptions\SpecManagementException;
 use App\Models\Spec;
 use App\Providers\SpecServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -27,10 +29,14 @@ class SpecsIndex extends Component
 
     protected $listeners = ['deleteSpec'];
 
-    public function __construct()
+    public function boot()
+    {
+        $this->specService = app(SpecServiceProvider::class);
+    }
+
+    public function mount()
     {
         $this->authorize('viewAny', Spec::class);
-        $this->specService = app(SpecServiceProvider::class);
     }
 
     protected function rules()
@@ -63,7 +69,12 @@ class SpecsIndex extends Component
             $this->name = $spec->name;
             $this->editMode = true;
             $this->setSpecSec = true;
-        } catch (\Exception $e) {
+        } catch (SpecManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'Failed to load spec data');
         }
     }
@@ -87,7 +98,10 @@ class SpecsIndex extends Component
             $this->setSpecSec = false;
         } catch (SpecManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -100,7 +114,9 @@ class SpecsIndex extends Component
             $this->alert('success', 'Spec deleted successfully');
         } catch (SpecManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
             $this->alert('error', 'An unexpected error occurred');
         }
     }

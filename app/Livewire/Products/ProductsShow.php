@@ -42,7 +42,7 @@ class ProductsShow extends Component
     public $editMode = false;
     public $addCostMode = false;
 
-    public function __construct()
+    public function boot()
     {
         $this->productService = app(ProductServiceProvider::class);
     }
@@ -103,7 +103,10 @@ class ProductsShow extends Component
             $this->alert('success', 'Product updated successfully');
         } catch (ProductManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -131,7 +134,8 @@ class ProductsShow extends Component
             $this->alert('error', $e->getMessage());
         } catch (AuthorizationException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -150,7 +154,8 @@ class ProductsShow extends Component
             $this->alert('error', $e->getMessage());
         } catch (AuthorizationException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -170,7 +175,8 @@ class ProductsShow extends Component
             $this->alert('error', $e->getMessage());
         } catch (AuthorizationException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -241,7 +247,8 @@ class ProductsShow extends Component
             $this->alert('error', $e->getMessage());
         } catch (AuthorizationException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
