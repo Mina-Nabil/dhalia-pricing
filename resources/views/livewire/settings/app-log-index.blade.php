@@ -7,30 +7,30 @@
             <input type="text" class="form-control w-auto d-inline-block cursor-pointer" style="width:auto" name="datetimes" id="reportrange" />
         </header>
         <div class="card-body px-6 pb-6">
-            <div class=" -mx-6">
+            <div class="-mx-6 overflow-x-auto">
                 <div class="inline-block min-w-full align-middle">
-                    <div class="overflow-hidden ">
-                        <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 800px;">
                             <thead class="bg-slate-200 dark:bg-slate-700">
                                 <tr>
 
-                                    <th scope="col" class=" table-th ">
+                                    <th scope="col" class="table-th whitespace-nowrap">
                                         User
                                     </th>
 
-                                    <th scope="col" class=" table-th ">
+                                    <th scope="col" class="table-th whitespace-nowrap">
                                         Level
                                     </th>
 
-                                    <th scope="col" class=" table-th ">
+                                    <th scope="col" class="table-th whitespace-nowrap">
                                         Title
                                     </th>
 
-                                    <th scope="col" class=" table-th ">
+                                    <th scope="col" class="table-th whitespace-nowrap">
                                         Description
                                     </th>
 
-                                    <th scope="col" class=" table-th ">
+                                    <th scope="col" class="table-th whitespace-nowrap">
                                         Time
                                     </th>
 
@@ -39,9 +39,9 @@
                             <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                 @foreach ($logs as $log)
                                     <tr wire:click="showLogInfo({{ $log->id }})" class="table-td hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer">
-                                        <td class="table-td ">{{ $log->user?->username }}</td>
+                                        <td class="table-td whitespace-nowrap">{{ $log->user?->username }}</td>
 
-                                        <td class="table-td">
+                                        <td class="table-td whitespace-nowrap">
                                             @if ($log->level === 'info')
                                                 <span class="badge bg-info-500 text-info-500 bg-opacity-30 capitalize">{{ $log->level }}</span>
                                             @elseif($log->level === 'error')
@@ -53,20 +53,20 @@
                                             @endif
                                         </td>
 
-                                        <td class="table-td ">{{ $log->title }}</td>
+                                        <td class="table-td whitespace-nowrap">{{ $log->title }}</td>
 
-                                        <td class="table-td @if ($log->desc != '') !toolTip onTop @endif" data-tippy-content="{{ $log->desc }}" data-tippy-theme="dark">
+                                        <td class="table-td whitespace-nowrap @if ($log->desc != '') !toolTip onTop @endif" data-tippy-content="{{ $log->desc }}" data-tippy-theme="dark">
                                             {{ strlen($log->desc) > 50 ? substr($log->desc, 0, 50) . '...' : $log->desc }}
                                         </td>
 
-                                        <td class="table-td ">{{ $log->created_at }}</td>
+                                        <td class="table-td whitespace-nowrap">{{ $log->created_at }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                         @if ($logs->isEmpty())
                             {{-- START: empty filter result --}}
-                            <div class="card m-5 p-5">
+                            <div class="card m-5 p-5" style="min-height: 400px;">
                                 <div class="card-body rounded-md bg-white dark:bg-slate-800">
                                     <div class="items-center text-center p-5">
                                         <h2><iconify-icon icon="icon-park-outline:search"></iconify-icon></h2>

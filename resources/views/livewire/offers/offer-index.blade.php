@@ -123,13 +123,14 @@
         @endif
 
         <!-- Offers Table -->
-        <div class="overflow-x-auto -mx-6">
+        <div class="overflow-x-auto">
             <div class="inline-block min-w-full align-middle">
                 <div class="overflow-hidden">
-                    <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 900px;">
                         <thead class="bg-slate-200 dark:bg-slate-700">
                             <tr>
-                                <th scope="col" class="table-th cursor-pointer" wire:click="sortBy('code')">
+                                <th scope="col" class="table-th cursor-pointer whitespace-nowrap" wire:click="sortBy('code')">
+                                    <th scope="col" class="table-th whitespace-nowrap">User</th>
                                     <div class="flex items-center">
                                         Code
                                         @if ($sort === 'code')
@@ -139,10 +140,11 @@
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="table-th">Client</th>
-                                <th scope="col" class="table-th">User</th>
-                                <th scope="col" class="table-th">Status</th>
-                                <th scope="col" class="table-th cursor-pointer"
+                                <th scope="col" class="table-th whitespace-nowrap">Client</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Status</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Products</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Currency</th>
+                                <th scope="col" class="table-th cursor-pointer whitespace-nowrap"
                                     wire:click="sortBy('total_price')">
                                     <div class="flex items-center">
                                         Total Price
@@ -153,7 +155,7 @@
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="table-th cursor-pointer"
+                                <th scope="col" class="table-th cursor-pointer whitespace-nowrap"
                                     wire:click="sortBy('total_tonnage')">
                                     <div class="flex items-center">
                                         Tonnage
@@ -164,7 +166,7 @@
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="table-th cursor-pointer" wire:click="sortBy('created_at')">
+                                <th scope="col" class="table-th cursor-pointer whitespace-nowrap" wire:click="sortBy('created_at')">
                                     <div class="flex items-center">
                                         Created At
                                         @if ($sort === 'created_at')
@@ -174,16 +176,16 @@
                                         @endif
                                     </div>
                                 </th>
-                                <th scope="col" class="table-th">Actions</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                             @forelse($offers as $offer)
-                                <tr>
-                                    <td class="table-td font-medium">{{ $offer->code }}</td>
-                                    <td class="table-td">{{ $offer->client->name ?? 'N/A' }}</td>
-                                    <td class="table-td">{{ $offer->user->name ?? 'N/A' }}</td>
-                                    <td class="table-td">
+                            <tr wire:click="goToOfferShow({{ $offer->id }})" class="cursor-pointer">
+                                    <td class="table-td whitespace-nowrap">{{ $offer->user->name ?? 'N/A' }}</td>
+                                    <td class="table-td font-medium whitespace-nowrap">{{ $offer->code }}</td>
+                                    <td class="table-td whitespace-nowrap">{{ $offer->client->name ?? 'N/A' }}</td>
+                                    <td class="table-td whitespace-nowrap">
                                         <span
                                             class="badge 
                                                 @switch($offer->status)
@@ -199,10 +201,13 @@
                                             {{ ucfirst($offer->status) }}
                                         </span>
                                     </td>
-                                    <td class="table-td">${{ number_format($offer->total_price, 2) }}</td>
-                                    <td class="table-td">{{ number_format($offer->total_tonnage, 2) }}</td>
-                                    <td class="table-td">{{ $offer->created_at->format('M d, Y') }}</td>
-                                    <td class="table-td">
+                                    <td class="table-td whitespace-nowrap">{{ $offer->items->pluck('product.name')->implode(', ') }}</td>
+                                    <td class="table-td whitespace-nowrap">{{ $offer->currency->name ?? 'N/A' }}</td>
+                                  
+                                    <td class="table-td whitespace-nowrap">${{ number_format($offer->total_price, 2) }}</td>
+                                    <td class="table-td whitespace-nowrap">{{ number_format($offer->total_tonnage, 2) }}</td>
+                                    <td class="table-td whitespace-nowrap">{{ $offer->created_at->format('M d, Y') }}</td>
+                                    <td class="table-td whitespace-nowrap">
                                         <div class="flex space-x-3 rtl:space-x-reverse">
                                             <button wire:click="goToOfferShow({{ $offer->id }})"
                                                 class="action-btn text-primary">
@@ -224,7 +229,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="table-td text-center">No offers found</td>
+                                    <td colspan="8" class="table-td text-center whitespace-nowrap">No offers found</td>
                                 </tr>
                             @endforelse
                         </tbody>

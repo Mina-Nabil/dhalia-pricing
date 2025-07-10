@@ -17,7 +17,9 @@ class SelectClientsModal extends Component
     public $selectedClientNames = [];
     public $mode = 'multiple';
 
+    /** @var ClientServiceProvider */
     protected $clientService;
+
     protected $paginationTheme = 'simple-bootstrap';
 
     protected $listeners = ['clearClientsSelection'];
@@ -29,8 +31,7 @@ class SelectClientsModal extends Component
 
     public function mount($selectedClientIds = [])
     {
-        $this->selectedClientIds = $selectedClientIds;
-        $this->originalSelectedClientIds = $selectedClientIds;
+        $this->originalSelectedClientIds = $this->selectedClientIds;
         $this->selectedClientNames = $this->clientService->getClientsByIds($this->selectedClientIds)->pluck('name')->toArray();
     }
 

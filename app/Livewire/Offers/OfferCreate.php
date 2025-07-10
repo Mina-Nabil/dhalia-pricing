@@ -38,6 +38,7 @@ class OfferCreate extends Component
     public $currency_id = '';
     public $currency_rate = 1;
     public $duplicate_of_id = null;
+    public $duplicate_of_code = null;
 
     // Offer items (dynamic array)
     public $offerItems = [];
@@ -68,10 +69,9 @@ class OfferCreate extends Component
         }
     }
 
-    public function mount($duplicateOfId = null)
+    public function mount($duplicate_of_id = null)
     {
         $this->authorize('create-offers');
-        $this->duplicate_of_id = $duplicateOfId;
         // Load dropdown data
         $this->currencies = $this->currencyService->getCurrencies(paginate: false, forDropdown: true);
         $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
@@ -79,8 +79,13 @@ class OfferCreate extends Component
         $this->statuses = Offer::STATUSES;
         $this->calcTypes = OfferItem::CALC_TYPES;
 
-        if ($duplicateOfId) {
-            $offer = $this->offerService->getOffer($duplicateOfId, false);
+        if ($duplicate_of_id) {
+            $offer = $this->offerService->getOffer($duplicate_of_id, false);
+            while ($offer->duplicate_of_id) {
+                $offer = $this->offerService->getOffer($offer->duplicate_of_id, false);
+            }
+            $this->duplicate_of_id = $offer->id;
+            $this->duplicate_of_code = $offer->code;
             $this->loadFieldsFromOffer($offer);
         } else {
             // Add first offer item
@@ -326,12 +331,13 @@ class OfferCreate extends Component
 
     private function loadFieldsFromOffer($offer)
     {
-        $this->status = $offer->status;
+        $this->status = Offer::STATUS_DRAFT;
         $this->client_id = $offer->client_id;
         $this->currency_id = $offer->currency_id;
         $this->currency_rate = $offer->currency_rate;
         $this->offerItems = $offer->items->map(function ($item) {
             return [
+                'internal_cost' => $item->internal_cost,
                 'product_id' => $item->product_id,
                 'packing_id' => $item->packing_id,
                 'quantity_in_tons' => $item->quantity_in_tons,
@@ -356,9 +362,9 @@ class OfferCreate extends Component
                         'cost' => $ingredient->cost,
                         'percentage' => $ingredient->percentage,
                     ];
-                }),
+                })->toArray(),
             ];
-        });
+        })->toArray();
 
         $this->recalculateAllItems();
     }

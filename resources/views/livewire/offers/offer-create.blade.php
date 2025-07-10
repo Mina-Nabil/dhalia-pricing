@@ -1,7 +1,6 @@
 <div>
-    {{ $errors }}
     {{-- Main Offer Card --}}
-    <x-card title="Create New Offer">
+    <x-card title="Create New Offer {{ $duplicate_of_code ? ' - Duplicate of ' . $duplicate_of_code : '' }}">
 
         <x-slot name="tools">
             <button wire:click="saveOffer" type="button" class="btn btn-primary">
@@ -12,7 +11,7 @@
         <div class="grid grid-cols-3 gap-4">
 
             <div class="col-span-3">
-                <livewire:components.select-clients-modal wire:model="client_id" :mode="'single'" />
+                <livewire:components.select-clients-modal :mode="'single'" :selectedClientIds="[$client_id]" />
                 @error('client_id')
                     <span class="text-danger-500 small">{{ $message }}</span>
                 @enderror

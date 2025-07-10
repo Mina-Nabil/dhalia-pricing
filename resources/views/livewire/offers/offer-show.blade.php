@@ -1,13 +1,13 @@
 <div>
     {{-- Main Offer Card --}}
-    <x-card title="Offer Details - {{ $offer->code ?? 'N/A' }}">
+    <x-card title="{{ $offer->code ?? 'N/A' }}">
 
         <x-slot name="tools">
-            <div class="flex gap-2 items-center">
+            <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                 @can('update-offer', $offer)
                     <div class="flex items-center gap-2">
                         <select wire:change="updateOfferStatus($event.target.value)" 
-                                class="btn btn-outline-primary btn-sm" 
+                                class="btn btn-outline-primary btn-sm w-full sm:w-auto" 
                                 style="background: white; border: 1px solid #007bff; color: #007bff; padding: 0.375rem 0.75rem; border-radius: 0.375rem;">
                             @foreach ($statuses as $statusOption)
                                 <option value="{{ $statusOption }}" 
@@ -19,26 +19,28 @@
                     </div>
                 @endcan
                 
-                @can('create-offers')
-                    <button wire:click="duplicateOffer" type="button" class="btn btn-warning">
-                        <i class="fa fa-copy"></i> Duplicate Offer
-                    </button>
-                @endcan
-                
-                @can('delete-offer', $offer)
-                    <button wire:click="deleteOffer" type="button" class="btn btn-danger"
-                        onclick="return confirm('Are you sure you want to delete this offer? This action cannot be undone.')">
-                        <i class="fa fa-trash"></i> Delete Offer
-                    </button>
-                @endcan
-                
-                <a href="{{ route('offers.index') }}" class="btn btn-secondary">
-                    <i class="fa fa-arrow-left"></i> Back to Offers
-                </a>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    @can('create-offers')
+                        <button wire:click="duplicateOffer" type="button" class="btn btn-warning btn-sm">
+                            <i class="fa fa-copy"></i> <span class="hidden sm:inline">Duplicate</span>
+                        </button>
+                    @endcan
+                    
+                    @can('delete-offer', $offer)
+                        <button wire:click="deleteOffer" type="button" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to delete this offer? This action cannot be undone.')">
+                            <i class="fa fa-trash"></i> <span class="hidden sm:inline">Delete</span>
+                        </button>
+                    @endcan
+                    
+                    <a href="{{ route('offers.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa fa-arrow-left"></i> <span class="hidden sm:inline">Back</span>
+                    </a>
+                </div>
             </div>
         </x-slot>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
             <div>
                 <x-input-label :value="__('Status')" />
                 <span class="badge badge-{{ $offer->status === 'draft' ? 'secondary' : ($offer->status === 'sent' ? 'primary' : ($offer->status === 'accepted' ? 'success' : 'danger')) }}">
@@ -53,11 +55,11 @@
 
             <div>
                 <x-input-label :value="__('Currency')" />
-                <p class="form-control-plaintext mb-0">{{ $offer->currency->name ?? 'N/A' }} ({{ $offer->currency->code ?? 'N/A' }})</p>
+                <p class="form-control-plaintext mb-0">{{ $offer->currency->code ?? 'N/A' }}</p>
             </div>
 
             <div>
-                <x-input-label :value="__('Currency Rate')" />
+                <x-input-label :value="__('Rate')" />
                 <p class="form-control-plaintext mb-0">{{ number_format($offer->currency_rate ?? 0, 3) }}</p>
             </div>
         </div>
@@ -90,7 +92,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {{-- Left Column: Product & Ingredients --}}
                 <div class="lg:col-span-1">
-                    <div class="border border-blue-200 rounded-lg p-4 h-full bg-blue-50">
+                    <div class="border border-blue-200 rounded-lg p-2 sm:p-4 h-full bg-blue-50">
                         <h6 class="text-blue-600 mb-3 font-semibold"><i class="fa fa-cube"></i> Product & Ingredients</h6>
 
                         {{-- Product Information --}}
@@ -148,7 +150,7 @@
 
                 {{-- Middle Column: Packing & Pricing --}}
                 <div class="lg:col-span-1">
-                    <div class="border border-green-200 rounded-lg p-4 h-full bg-green-50">
+                    <div class="border border-green-200 rounded-lg p-2 sm:p-4 h-full bg-green-50">
                         <h6 class="text-green-600 mb-3 font-semibold"><i class="fa fa-box"></i> Packing & Pricing</h6>
 
                         {{-- Packing Info --}}
@@ -194,7 +196,7 @@
 
                 {{-- Right Column: Additional Costs & Summary --}}
                 <div class="lg:col-span-1">
-                    <div class="border border-yellow-200 rounded-lg p-4 h-full bg-yellow-50">
+                    <div class="border border-yellow-200 rounded-lg p-2 sm:p-4 h-full bg-yellow-50">
                         <h6 class="text-yellow-600 mb-3 font-semibold"><i class="fa fa-calculator"></i> Costs & Summary</h6>
 
                         {{-- Freight --}}
@@ -285,7 +287,7 @@
     <div class="mt-5">
         {{-- Overall Summary Card --}}
         <x-card title="Offer Summary">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Items Total</h5>
                     <h3 class="text-blue-600 text-2xl font-bold">{{ $offer->items->count() }}</h3>
@@ -311,7 +313,7 @@
             </div>
 
             {{-- Additional Summary Information --}}
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 pt-4 border-t">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t">
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Total Profit</h5>
                     <h4 class="text-green-600 text-xl font-bold">{{ number_format($offer->total_profit ?? 0, 2) }}</h4>

@@ -38,7 +38,7 @@ class OfferServiceProvider extends ServiceProvider
      * @param string $sort_direction
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function getOffers($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $paginate = 10, $sort = 'created_at', $sort_direction = 'desc')
+    public function getOffers($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $paginate = 10, $sort = 'created_at', $sort_direction = 'desc', $with = [])
     {
 
         if (!in_array($sort, self::SORT_FIELDS)) {
@@ -54,7 +54,9 @@ class OfferServiceProvider extends ServiceProvider
             $returnAll = true;
         }
 
-        $query = Offer::query()->when(!$returnAll, function ($query) {
+        $query = Offer::query()
+        ->with($with)
+        ->when(!$returnAll, function ($query) {
             $query->where('user_id', Auth::id());
         })
             ->when($search, function ($query) use ($search) {

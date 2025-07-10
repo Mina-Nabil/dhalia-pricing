@@ -57,48 +57,50 @@
             </div>
 
             <!-- Clients Table -->
-            <div class="overflow-x-auto max-h-96">
-                <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
-                    <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
-                        <tr>
-                            <th scope="col" class="table-th w-16">Select</th>
-                            <th scope="col" class="table-th">Name</th>
-                            <th scope="col" class="table-th">Phone</th>
-                            <th scope="col" class="table-th">Email</th>
-                            <th scope="col" class="table-th">Address</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
-                        @forelse($clients as $client)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
-                                <td class="table-td text-center">
-                                    <button wire:click="toggleClient({{ $client->id }})"
-                                        class="btn btn-sm {{ $this->isSelected($client->id) ? 'btn-primary' : 'btn-outline-secondary' }}">
-                                        @if ($this->isSelected($client->id))
-                                            <iconify-icon icon="heroicons:check"></iconify-icon>
-                                        @else
-                                            <iconify-icon icon="heroicons:plus"></iconify-icon>
-                                        @endif
-                                    </button>
-                                </td>
-                                <td class="table-td font-medium">{{ $client->name }}</td>
-                                <td class="table-td">{{ $client->phone ?? 'N/A' }}</td>
-                                <td class="table-td">{{ $client->email ?? 'N/A' }}</td>
-                                <td class="table-td">{{ Str::limit($client->address ?? 'N/A', 30) }}</td>
-                            </tr>
-                        @empty
+            <div class="overflow-x-auto max-h-96 -mx-6">
+                <div class="inline-block min-w-full align-middle">
+                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 600px;">
+                        <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
                             <tr>
-                                <td colspan="5" class="table-td text-center text-slate-500">
-                                    @if ($search)
-                                        No clients found matching "{{ $search }}"
-                                    @else
-                                        No clients available
-                                    @endif
-                                </td>
+                                <th scope="col" class="table-th w-16 whitespace-nowrap">Select</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Name</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Phone</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Email</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Address</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
+                            @forelse($clients as $client)
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
+                                    <td class="table-td text-center whitespace-nowrap bg-white dark:bg-slate-800">
+                                        <button wire:click="toggleClient({{ $client->id }})"
+                                            class="btn btn-sm {{ $this->isSelected($client->id) ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                            @if ($this->isSelected($client->id))
+                                                <iconify-icon icon="heroicons:check"></iconify-icon>
+                                            @else
+                                                <iconify-icon icon="heroicons:plus"></iconify-icon>
+                                            @endif
+                                        </button>
+                                    </td>
+                                    <td class="table-td font-medium whitespace-nowrap bg-white dark:bg-slate-800">{{ $client->name }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">{{ $client->phone ?? 'N/A' }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">{{ $client->email ?? 'N/A' }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">{{ Str::limit($client->address ?? 'N/A', 30) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="table-td text-center text-slate-500 whitespace-nowrap bg-white dark:bg-slate-800">
+                                        @if ($search)
+                                            No clients found matching "{{ $search }}"
+                                        @else
+                                            No clients available
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Pagination -->

@@ -25,21 +25,21 @@
         </header>
 
         <div class="card-body px-6 pb-6">
-            <div class=" -mx-6">
+            <div class="-mx-6 overflow-x-auto">
                 <div class="inline-block min-w-full align-middle">
 
-                    <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
-                        <thead class=" border-t border-slate-100 dark:border-slate-800 bg-slate-200 dark:bg-slate-700">
+                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 600px;">
+                        <thead class="border-t border-slate-100 dark:border-slate-800 bg-slate-200 dark:bg-slate-700">
                             <tr>
-                                <th scope="col" class=" table-th ">
+                                <th scope="col" class="table-th whitespace-nowrap">
                                     Name
                                 </th>
 
-                                <th scope="col" class=" table-th ">
+                                <th scope="col" class="table-th whitespace-nowrap">
                                     Products Count
                                 </th>
 
-                                <th scope="col" class=" table-th ">
+                                <th scope="col" class="table-th whitespace-nowrap">
                                     Action
                                 </th>
                             </tr>
@@ -48,7 +48,7 @@
 
                             @foreach ($specs as $spec)
                                 <tr>
-                                    <td class="table-td flex items-center">
+                                    <td class="table-td flex items-center whitespace-nowrap">
                                         <div class="rounded-full flex-shrink-0 ltr:mr-[10px] rtl:ml-[10px]">
                                             <span
                                                 class="block w-8 h-8 lg:w-8 lg:h-8 object-cover text-center text-lg leading-8 user-initial">
@@ -58,14 +58,14 @@
                                         <span>{{ $spec->name }}</span>
                                     </td>
 
-                                    <td class="table-td">
+                                    <td class="table-td whitespace-nowrap">
                                         <span
                                             class="badge bg-primary-500 text-primary-500 bg-opacity-30 capitalize rounded-3xl">
                                             {{ $spec->products()->count() }} product(s)
                                         </span>
                                     </td>
 
-                                    <td>
+                                    <td class="whitespace-nowrap">
                                         <div class="dropstart relative">
                                             <button class="inline-flex justify-center items-center" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -106,7 +106,7 @@
 
                     @if ($specs->isEmpty())
                         {{-- START: empty filter result --}}
-                        <div class="card m-5 p-5">
+                        <div class="card m-5 p-5" style="min-height: 400px;">
                             <div class="card-body rounded-md bg-white dark:bg-slate-800">
                                 <div class="items-center text-center p-5">
                                     <h2><iconify-icon icon="icon-park-outline:search"></iconify-icon></h2>

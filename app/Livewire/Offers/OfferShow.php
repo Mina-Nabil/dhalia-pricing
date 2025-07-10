@@ -94,7 +94,7 @@ class OfferShow extends Component
         try {
             $this->authorize('create-offers');
             
-            return redirect()->route('offers.create', ['duplicateOfId' => $this->offer->id]);
+            return redirect()->route('offers.create.duplicate', ['duplicate_of_id' => $this->offer->id]);
             
         } catch (AuthorizationException $e) {
             $this->alert('error', 'You are not authorized to create offers.');

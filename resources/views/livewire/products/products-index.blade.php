@@ -44,25 +44,25 @@
             </header>
             <div class="card-body px-6 pb-6">
                 <div class="overflow-x-auto -mx-6">
-                    <div class="inline-block min-w-full align-middle">
+                    <div class="inline-block align-middle" style="min-width: 100%;">
                         <div class="overflow-hidden">
-                            <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 400px; table-layout: auto;">
                                 <thead class="bg-slate-200 dark:bg-slate-700">
                                     <tr>
-                                        <th scope="col" class="table-th">Name</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Name</th>
                                         {{-- <th scope="col" class="table-th">Prefix</th> --}}
-                                        <th scope="col" class="table-th">Products</th>
-                                        <th scope="col" class="table-th">Actions</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Products</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody
                                     class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                     @forelse($categories as $category)
                                         <tr>
-                                            <td class="table-td">{{ $category->name }}</td>
+                                            <td class="table-td whitespace-nowrap">{{ $category->name }}</td>
                                             {{-- <td class="table-td">{{ $department->prefix_code }}</td> --}}
-                                            <td class="table-td">{{ $category->products_count }}</td>
-                                            <td class="table-td">
+                                            <td class="table-td whitespace-nowrap">{{ $category->products_count }}</td>
+                                            <td class="table-td whitespace-nowrap">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
                                                     <button wire:click="openEditCategorySec({{ $category->id }})"
                                                         class="action-btn text-primary">
@@ -77,7 +77,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="table-td text-center">No categories found</td>
+                                            <td colspan="3" class="table-td text-center whitespace-nowrap">No categories found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -95,27 +95,27 @@
             </header>
             <div class="card-body px-6 pb-6">
                 <div class="overflow-x-auto -mx-6">
-                    <div class="inline-block min-w-full align-middle">
+                    <div class="inline-block align-middle" style="min-width: 100%;">
                         <div class="overflow-hidden">
-                            <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 700px; table-layout: auto;">
                                 <thead class="bg-slate-200 dark:bg-slate-700">
                                     <tr>
-                                        <th scope="col" class="table-th">Name</th>
-                                        <th scope="col" class="table-th">Category</th>
-                                        <th scope="col" class="table-th">Spec</th>
-                                        <th scope="col" class="table-th">Base Cost</th>
-                                        <th scope="col" class="table-th">Actions</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Name</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Category</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Spec</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Base Cost</th>
+                                        <th scope="col" class="table-th whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody
                                     class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                     @forelse($products as $product)
                                         <tr>
-                                            <td class="table-td">{{ $product->category->name }}</td>
-                                            <td class="table-td">{{ $product->spec->name }}</td>
-                                            <td class="table-td">{{ $product->name }}</td>
-                                            <td class="table-td">{{ $product->base_cost }}</td>
-                                            <td class="table-td">
+                                            <td class="table-td whitespace-nowrap">{{ $product->name }}</td>
+                                            <td class="table-td whitespace-nowrap">{{ $product->category->name }}</td>
+                                            <td class="table-td whitespace-nowrap">{{ $product->spec->name }}</td>
+                                            <td class="table-td whitespace-nowrap">{{ number_format($product->base_cost, 2) }}</td>
+                                            <td class="table-td whitespace-nowrap">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
                                                     <button wire:click="goToProductShow({{ $product->id }})"
                                                         class="action-btn text-primary">
@@ -138,7 +138,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="table-td text-center">No products found</td>
+                                            <td colspan="5" class="table-td text-center whitespace-nowrap">No products found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

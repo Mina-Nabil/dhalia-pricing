@@ -38,26 +38,26 @@
             </div>
 
             <!-- Status Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 @foreach($statuses as $status)
-                    <div class="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer {{ $this->isSelected($status) ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20' : '' }}"
+                    <div class="border rounded-lg p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer {{ $this->isSelected($status) ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20' : '' }}"
                          wire:click="toggleStatus('{{ $status }}')">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
+                        <div class="flex items-start justify-between space-x-3">
+                            <div class="flex items-start space-x-3 flex-1 min-w-0">
+                                <div class="flex-shrink-0 mt-0.5">
                                     @if($this->isSelected($status))
-                                        <div class="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
-                                            <iconify-icon icon="heroicons:check" class="text-white text-sm"></iconify-icon>
+                                        <div class="w-5 h-5 sm:w-6 sm:h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                                            <iconify-icon icon="heroicons:check" class="text-white text-xs sm:text-sm"></iconify-icon>
                                         </div>
                                     @else
-                                        <div class="w-6 h-6 border-2 border-slate-300 rounded-full"></div>
+                                        <div class="w-5 h-5 sm:w-6 sm:h-6 border-2 border-slate-300 rounded-full"></div>
                                     @endif
                                 </div>
-                                <div>
-                                    <h4 class="font-medium text-slate-900 dark:text-slate-100">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-medium text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                                         {{ ucfirst($status) }}
                                     </h4>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                                         @switch($status)
                                             @case('draft')
                                                 Offers that are being prepared
@@ -84,8 +84,9 @@
                                 </div>
                             </div>
                             <div class="flex-shrink-0">
-                                <span class="badge {{ $this->getStatusBadgeClass($status) }}">
-                                    {{ ucfirst($status) }}
+                                <span class="badge {{ $this->getStatusBadgeClass($status) }} text-xs">
+                                    <span class="hidden sm:inline">{{ ucfirst($status) }}</span>
+                                    <span class="sm:hidden">{{ strtoupper(substr($status, 0, 1)) }}</span>
                                 </span>
                             </div>
                         </div>
@@ -95,10 +96,10 @@
 
             @if(count($selectedStatuses) > 0)
                 <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <h5 class="font-medium text-blue-900 dark:text-blue-100 mb-2">Selected Statuses:</h5>
+                    <h5 class="font-medium text-blue-900 dark:text-blue-100 mb-2 text-sm sm:text-base">Selected Statuses:</h5>
                     <div class="flex flex-wrap gap-2">
                         @foreach($selectedStatuses as $status)
-                            <span class="badge {{ $this->getStatusBadgeClass($status) }}">
+                            <span class="badge {{ $this->getStatusBadgeClass($status) }} text-xs">
                                 {{ ucfirst($status) }}
                             </span>
                         @endforeach

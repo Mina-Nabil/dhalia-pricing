@@ -219,7 +219,8 @@ class OfferIndex extends Component
             price_to: $this->filterPriceTo ?: null,
             paginate: 10,
             sort: $this->sort,
-            sort_direction: $this->sortDirection
+            sort_direction: $this->sortDirection,
+            with: ['user', 'client', 'items.product']
         );
 
         $users = $this->userService->getUsers();

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <title>Pricing</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo/fav-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo/dhalia-fav.jpeg') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -50,8 +50,8 @@
                 class="w-screen h-screen fixed top-0 bg-slate-900 bg-opacity-50 backdrop-blur-sm z-10 hidden"></div>
             <div class="logo-segment">
                 <a class="flex items-center p-2" href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo" alt="logo">
-                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo" alt="logo">
+                    <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="black_logo" alt="logo">
+                    <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="white_logo" alt="logo">
                     {{-- <span
                         class="ltr:ml-3 rtl:mr-3 text-xl font-Inter font-bold text-slate-900 dark:text-white">Wise
                         Ins.</span> --}}
@@ -155,9 +155,9 @@
                             <div
                                 class="flex items-center md:space-x-4 space-x-2 xl:space-x-0 rtl:space-x-reverse vertical-box">
                                 <a href="{{ url('/') }}" class="mobile-logo xl:hidden inline-block">
-                                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo"
+                                    <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="black_logo"
                                         alt="logo">
-                                    <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo"
+                                    <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="white_logo"
                                         alt="logoo">
                                 </a>
 
@@ -167,15 +167,15 @@
                             <div class="items-center space-x-4 rtl:space-x-reverse horizental-box">
                                 <a href="{{ url('/') }}">
                                     <span class="xl:inline-block hidden">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo "
+                                        <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="black_logo "
                                             alt="logo">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo"
+                                        <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="white_logo"
                                             alt="logo">
                                     </span>
                                     <span class="xl:hidden inline-block">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="black_logo "
+                                        <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="black_logo "
                                             alt="logo">
-                                        <img src="{{ asset('images/logo/pricing-logo.png') }}" class="white_logo "
+                                        <img src="{{ asset('images/logo/dhalia-logo.jpeg') }}" class="white_logo "
                                             alt="logo">
                                     </span>
                                 </a>

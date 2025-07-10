@@ -24,6 +24,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/clients/{client_id}', ClientShow::class)->name('clients.show');
     
     Route::get('/offers', OfferIndex::class)->name('offers.index');
+    Route::get('/offers/create/{duplicate_of_id?}', OfferCreate::class)->name('offers.create.duplicate');
     Route::get('/offers/create', OfferCreate::class)->name('offers.create');
     Route::get('/offers/{offer_id}', OfferShow::class)->name('offers.show');
 

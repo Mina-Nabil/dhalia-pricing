@@ -53,56 +53,58 @@
             </div>
 
             <!-- Users Table -->
-            <div class="overflow-x-auto max-h-96">
-                <table class="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
-                    <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
-                        <tr>
-                            <th scope="col" class="table-th w-16">Select</th>
-                            <th scope="col" class="table-th">Name</th>
-                            <th scope="col" class="table-th">Username</th>
-                            <th scope="col" class="table-th">Role</th>
-                            <th scope="col" class="table-th">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
-                        @forelse($users as $user)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
-                                <td class="table-td text-center">
-                                    <button wire:click="toggleUser({{ $user->id }})"
-                                        class="btn btn-sm {{ $this->isSelected($user->id) ? 'btn-primary' : 'btn-outline-secondary' }}">
-                                        @if($this->isSelected($user->id))
-                                            <iconify-icon icon="heroicons:check"></iconify-icon>
-                                        @else
-                                            <iconify-icon icon="heroicons:plus"></iconify-icon>
-                                        @endif
-                                    </button>
-                                </td>
-                                <td class="table-td font-medium">{{ $user->name }}</td>
-                                <td class="table-td">{{ $user->username }}</td>
-                                <td class="table-td">
-                                    <span class="badge {{ $user->role === 'admin' ? 'bg-purple-500' : 'bg-blue-500' }} text-white">
-                                        {{ ucfirst($user->role) }}
-                                    </span>
-                                </td>
-                                <td class="table-td">
-                                    <span class="badge {{ $user->is_active ? 'bg-success-500' : 'bg-danger-500' }} text-white">
-                                        {{ $user->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
+            <div class="overflow-x-auto max-h-96 -mx-6">
+                <div class="inline-block min-w-full align-middle">
+                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 600px;">
+                        <thead class="bg-slate-200 dark:bg-slate-700 sticky top-0">
                             <tr>
-                                <td colspan="5" class="table-td text-center text-slate-500">
-                                    @if($search)
-                                        No users found matching "{{ $search }}"
-                                    @else
-                                        No users available
-                                    @endif
-                                </td>
+                                <th scope="col" class="table-th w-16 whitespace-nowrap">Select</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Name</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Username</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Role</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Status</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
+                            @forelse($users as $user)
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700">
+                                    <td class="table-td text-center whitespace-nowrap bg-white dark:bg-slate-800">
+                                        <button wire:click="toggleUser({{ $user->id }})"
+                                            class="btn btn-sm {{ $this->isSelected($user->id) ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                            @if($this->isSelected($user->id))
+                                                <iconify-icon icon="heroicons:check"></iconify-icon>
+                                            @else
+                                                <iconify-icon icon="heroicons:plus"></iconify-icon>
+                                            @endif
+                                        </button>
+                                    </td>
+                                    <td class="table-td font-medium whitespace-nowrap bg-white dark:bg-slate-800">{{ $user->name }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">{{ $user->username }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">
+                                        <span class="badge {{ $user->role === 'admin' ? 'bg-purple-500' : 'bg-blue-500' }} text-white">
+                                            {{ ucfirst($user->role) }}
+                                        </span>
+                                    </td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">
+                                        <span class="badge {{ $user->is_active ? 'bg-success-500' : 'bg-danger-500' }} text-white">
+                                            {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="table-td text-center text-slate-500 whitespace-nowrap bg-white dark:bg-slate-800">
+                                        @if($search)
+                                            No users found matching "{{ $search }}"
+                                        @else
+                                            No users available
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Pagination -->
