@@ -36,7 +36,6 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Client::class)->constrained();
             $table->foreignIdFor(User::class)->constrained();
-            $table->unsignedInteger('offers_count')->default(0);
             $table->timestamps();
         });
     }

@@ -28,7 +28,7 @@
             <div class="-mx-6 overflow-x-auto">
                 <div class="inline-block min-w-full align-middle">
 
-                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 600px;">
+                    <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" >
                         <thead class="border-t border-slate-100 dark:border-slate-800 bg-slate-200 dark:bg-slate-700">
                             <tr>
                                 <th scope="col" class="table-th whitespace-nowrap">

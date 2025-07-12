@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Exceptions\ClientManagementException;
 use App\Models\AppLog;
 use App\Models\Clients\Client;
+use App\Models\User;
 use App\Policies\ClientPolicy;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -125,6 +126,41 @@ class ClientServiceProvider extends ServiceProvider
         }
     }
 
+    public function addUsersToClient(Client $client, array $userIds)
+    {
+        Gate::authorize('update-client-users', $client);
+        $userIds = array_unique($userIds);
+        $userIds = array_filter($userIds, function ($userId) use ($client) {
+            return $userId !== $client->created_by_id;
+        });
+        $users = User::whereIn('id', $userIds)->get();
+        try {
+            $client->users()->sync($userIds);
+            AppLog::info('Users added to client', "Users " . implode(', ', $users->pluck('username')->toArray()) . " added to client {$client->name}", $client);
+            return $client;
+        } catch (Exception $e) {
+            report($e);
+            $usernames = $users->pluck('username')->toArray();
+            AppLog::error('User addition to client failed', 'Users ' . implode(', ', $usernames) . ' addition to client ' . $client->name . ' failed', $client);
+            throw new ClientManagementException('Client addition failed');
+        }
+    }
+
+    public function removeUserFromClient(Client $client, $userId)
+    {
+        Gate::authorize('update-client-users', $client);
+        try {
+            $user = User::find($userId);
+            $client->users()->detach($user);
+            AppLog::info('User removed from client', "User {$user->name} removed from client {$client->name}", $client);
+            return $client;
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('User removal from client failed', 'User ' . $userId . ' removal from client ' . $client->name . ' failed');
+            throw new ClientManagementException('Client removal failed');
+        }
+    }
+
 
     public function deleteClient(Client $client)
     {
@@ -159,6 +195,7 @@ class ClientServiceProvider extends ServiceProvider
         Gate::define('view-client-any', [ClientPolicy::class, 'viewAny']);
         Gate::define('create-client', [ClientPolicy::class, 'create']);
         Gate::define('update-client', [ClientPolicy::class, 'update']);
+        Gate::define('update-client-users', [ClientPolicy::class, 'updateUsers']);
         Gate::define('delete-client', [ClientPolicy::class, 'delete']);
     }
 }

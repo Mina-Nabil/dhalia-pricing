@@ -13,6 +13,7 @@ use App\Livewire\Settings\CurrenciesIndex;
 use App\Livewire\Settings\PackingsIndex;
 use App\Livewire\Settings\SpecsIndex;
 use App\Livewire\Settings\UsersIndex;
+use App\Providers\ProductServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/settings/products', ProductsIndex::class)->name('products.index');
     Route::get('/settings/products/{product_id}', ProductsShow::class)->name('products.show');
+
 
     Route::get('/settings/users', UsersIndex::class)->name('users.index');
     Route::get('/settings/currencies', CurrenciesIndex::class)->name('currencies.index');

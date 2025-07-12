@@ -8,10 +8,18 @@ use App\Models\Products\Product;
 use App\Models\Products\ProductCategory;
 use App\Models\Products\ProductCost;
 use App\Models\Products\Ingredient;
+use App\Models\Spec;
 use App\Policies\ProductPolicy;
 use Exception;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ProductServiceProvider extends ServiceProvider
 {
@@ -263,6 +271,471 @@ class ProductServiceProvider extends ServiceProvider
             report($e);
             AppLog::error('Product ingredient deletion failed', 'Product ingredient ' . $ingredient->name . ' deletion failed', $ingredient);
             throw new ProductManagementException('Product ingredient deletion failed');
+        }
+    }
+
+    public function exportProductsToExcel($filename = 'products_export.xlsx')
+    {
+        Gate::authorize('view-product-list');
+        
+        try {
+            // Create new spreadsheet
+            $spreadsheet = new Spreadsheet();
+            
+            // Create sheets
+            $productsSheet = $spreadsheet->getActiveSheet();
+            $productsSheet->setTitle('Products Data');
+            
+            $categoriesSheet = $spreadsheet->createSheet();
+            $categoriesSheet->setTitle('Categories');
+            
+            $specsSheet = $spreadsheet->createSheet();
+            $specsSheet->setTitle('Specs');
+            
+            // Populate Categories sheet
+            $this->populateCategoriesSheet($categoriesSheet);
+            
+            // Populate Specs sheet
+            $this->populateSpecsSheet($specsSheet);
+            
+            // Populate Products sheet
+            $this->populateProductsSheet($productsSheet);
+            
+            // Set active sheet to Products Data
+            $spreadsheet->setActiveSheetIndex(0);
+            
+            // Save to file
+            $writer = new Xlsx($spreadsheet);
+            $filePath = storage_path('app/' . $filename);
+            $writer->save($filePath);
+            
+            AppLog::info('Products exported to Excel', 'Products exported to ' . $filename);
+            
+            return $filePath;
+            
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Product export failed', 'Excel export failed');
+            throw new ProductManagementException('Product export failed: ' . $e->getMessage());
+        }
+    }
+
+    private function populateCategoriesSheet($sheet)
+    {
+        // Headers
+        $sheet->setCellValue('A1', 'ID');
+        $sheet->setCellValue('B1', 'Name');
+        $sheet->setCellValue('C1', 'Description');
+        
+        // Style headers
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4A90E2']
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ];
+        
+        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension('1')->setRowHeight(25);
+        
+        // Get categories
+        $categories = ProductCategory::get();
+        
+        $row = 2;
+        foreach ($categories as $category) {
+            $sheet->setCellValue('A' . $row, $category->id);
+            $sheet->setCellValue('B' . $row, $category->name);
+            $sheet->setCellValue('C' . $row, $category->description);
+            $row++;
+        }
+        
+        // Auto-size columns
+        foreach (range('A', 'C') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+    }
+
+    private function populateSpecsSheet($sheet)
+    {
+        // Headers
+        $sheet->setCellValue('A1', 'ID');
+        $sheet->setCellValue('B1', 'Name');
+        
+        // Style headers
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '28A745']
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ];
+        
+        $sheet->getStyle('A1:B1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension('1')->setRowHeight(25);
+        
+        // Get specs
+        $specs = Spec::get();
+        
+        $row = 2;
+        foreach ($specs as $spec) {
+            $sheet->setCellValue('A' . $row, $spec->id);
+            $sheet->setCellValue('B' . $row, $spec->name);
+            $row++;
+        }
+        
+        // Auto-size columns
+        foreach (range('A', 'B') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+    }
+
+    private function populateProductsSheet($sheet)
+    {
+        // Get all products with their relationships
+        $products = Product::with(['category', 'spec', 'costs', 'ingredients'])->get();
+        
+        // Collect all unique cost names and ingredient names
+        $costNames = [];
+        $ingredientNames = [];
+        
+        foreach ($products as $product) {
+            foreach ($product->costs as $cost) {
+                if (!in_array($cost->name, $costNames)) {
+                    $costNames[] = $cost->name;
+                }
+            }
+            
+            foreach ($product->ingredients as $ingredient) {
+                if (!in_array($ingredient->name, $ingredientNames)) {
+                    $ingredientNames[] = $ingredient->name;
+                }
+            }
+        }
+        
+        // Sort names for consistent ordering
+        sort($costNames);
+        sort($ingredientNames);
+        
+        // Create column mapping
+        $costColumnMap = [];
+        $ingredientColumnMap = [];
+        
+        // Basic product columns (A-E)
+        $currentCol = 'A';
+        $basicHeaders = ['ID', 'Name', 'Category', 'Spec', 'Base Cost'];
+        
+        foreach ($basicHeaders as $header) {
+            $sheet->setCellValue($currentCol . '1', $header);
+            $currentCol++;
+        }
+        
+        // Cost columns
+        foreach ($costNames as $costName) {
+            $costColumnMap[$costName] = $currentCol;
+            $sheet->setCellValue($currentCol . '1', 'Cost: ' . $costName);
+            $currentCol++;
+        }
+        
+        // Ingredient columns
+        foreach ($ingredientNames as $ingredientName) {
+            $ingredientColumnMap[$ingredientName] = $currentCol;
+            $sheet->setCellValue($currentCol . '1', 'Ingredient: ' . $ingredientName);
+            $currentCol++;
+        }
+        
+        // Style headers
+        $lastColumn = $this->getColumnLetter($this->getColumnIndex($currentCol) - 1);
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 12
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'DC3545']
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ];
+        
+        $sheet->getStyle('A1:' . $lastColumn . '1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension('1')->setRowHeight(25);
+        
+        // Populate product data
+        $row = 2;
+        foreach ($products as $product) {
+            // Basic product data
+            $sheet->setCellValue('A' . $row, $product->id);
+            $sheet->setCellValue('B' . $row, $product->name);
+            $sheet->setCellValue('C' . $row, $product->category ? $product->category->name : '');
+            $sheet->setCellValue('D' . $row, $product->spec ? $product->spec->name : '');
+            $sheet->setCellValue('E' . $row, $product->base_cost);
+            
+            // Cost data
+            foreach ($product->costs as $cost) {
+                $column = $costColumnMap[$cost->name];
+                $costValue = $cost->cost;
+                if ($cost->is_percentage) {
+                    $costValue .= '%';
+                }
+                $sheet->setCellValue($column . $row, $costValue);
+            }
+            
+            // Ingredient data
+            foreach ($product->ingredients as $ingredient) {
+                $column = $ingredientColumnMap[$ingredient->name];
+                $sheet->setCellValue($column . $row, $ingredient->cost);
+            }
+            
+            $row++;
+        }
+        
+        // Auto-size all columns
+        foreach (range('A', $lastColumn) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+    }
+
+    private function getColumnLetter($index)
+    {
+        $letters = '';
+        while ($index > 0) {
+            $index--;
+            $letters = chr($index % 26 + ord('A')) . $letters;
+            $index = intval($index / 26);
+        }
+        return $letters;
+    }
+
+    private function getColumnIndex($letter)
+    {
+        $index = 0;
+        $length = strlen($letter);
+        for ($i = 0; $i < $length; $i++) {
+            $index = $index * 26 + (ord($letter[$i]) - ord('A') + 1);
+        }
+        return $index;
+    }
+
+    public function importProductsFromExcel($filePath)
+    {
+        Gate::authorize('create-product');
+        
+        try {
+            // Load spreadsheet
+            $spreadsheet = IOFactory::load($filePath);
+            
+            // Import Categories (Sheet 2)
+            $categoriesSheet = $spreadsheet->getSheet(1); // Index 1 for Categories
+            $this->importCategoriesFromSheet($categoriesSheet);
+            
+            // Import Specs (Sheet 3)
+            $specsSheet = $spreadsheet->getSheet(2); // Index 2 for Specs
+            $this->importSpecsFromSheet($specsSheet);
+            
+            // Import Products (Sheet 1)
+            $productsSheet = $spreadsheet->getSheet(0); // Index 0 for Products Data
+            $this->importProductsFromSheet($productsSheet);
+            
+            AppLog::info('Products imported from Excel', 'Products imported successfully from ' . basename($filePath));
+            
+            return true;
+            
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Product import failed', 'Excel import failed: ' . $e->getMessage());
+            throw new ProductManagementException('Product import failed: ' . $e->getMessage());
+        }
+    }
+
+    private function importCategoriesFromSheet($sheet)
+    {
+        $highestRow = $sheet->getHighestRow();
+        
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $id = $sheet->getCell('A' . $row)->getValue();
+            $name = $sheet->getCell('B' . $row)->getValue();
+            $description = $sheet->getCell('C' . $row)->getValue();
+            
+            if (empty($name)) continue;
+            
+            $category = ProductCategory::find($id);
+            if ($category) {
+                // Update existing category
+                $category->update([
+                    'name' => $name,
+                    'description' => $description
+                ]);
+            } else {
+                // Create new category
+                ProductCategory::create([
+                    'name' => $name,
+                    'description' => $description
+                ]);
+            }
+        }
+    }
+
+    private function importSpecsFromSheet($sheet)
+    {
+        $highestRow = $sheet->getHighestRow();
+        
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $id = $sheet->getCell('A' . $row)->getValue();
+            $name = $sheet->getCell('B' . $row)->getValue();
+            
+            if (empty($name)) continue;
+            
+            $spec = Spec::find($id);
+            if ($spec) {
+                // Update existing spec
+                $spec->update([
+                    'name' => $name
+                ]);
+            } else {
+                // Create new spec
+                Spec::create([
+                    'name' => $name
+                ]);
+            }
+        }
+    }
+
+    private function importProductsFromSheet($sheet)
+    {
+        $highestRow = $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestColumn();
+        
+        // Get header row to identify cost and ingredient columns
+        $headers = [];
+        $costColumns = [];
+        $ingredientColumns = [];
+        
+        for ($col = 'A'; $col <= $highestColumn; $col++) {
+            $header = $sheet->getCell($col . '1')->getValue();
+            $headers[$col] = $header;
+            
+            if (strpos($header, 'Cost: ') === 0) {
+                $costColumns[$col] = str_replace('Cost: ', '', $header);
+            } elseif (strpos($header, 'Ingredient: ') === 0) {
+                $ingredientColumns[$col] = str_replace('Ingredient: ', '', $header);
+            }
+        }
+        
+        // Import products
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $id = $sheet->getCell('A' . $row)->getValue();
+            $name = $sheet->getCell('B' . $row)->getValue();
+            $categoryName = $sheet->getCell('C' . $row)->getValue();
+            $specName = $sheet->getCell('D' . $row)->getValue();
+            $baseCost = $sheet->getCell('E' . $row)->getValue();
+            
+            if (empty($name)) continue;
+            
+            // Find category and spec by name
+            $category = ProductCategory::where('name', $categoryName)->first();
+            $spec = Spec::where('name', $specName)->first();
+            
+            if (!$category || !$spec) {
+                AppLog::warning('Product import skipped', "Product '{$name}' skipped: Category or Spec not found");
+                continue;
+            }
+            
+            // Create or update product
+            $product = Product::find($id);
+            if ($product) {
+                // Update existing product
+                $product->update([
+                    'name' => $name,
+                    'product_category_id' => $category->id,
+                    'spec_id' => $spec->id,
+                    'base_cost' => $baseCost
+                ]);
+            } else {
+                // Create new product
+                $product = Product::create([
+                    'name' => $name,
+                    'product_category_id' => $category->id,
+                    'spec_id' => $spec->id,
+                    'base_cost' => $baseCost
+                ]);
+            }
+            
+            // Delete existing costs and ingredients
+            $product->costs()->delete();
+            $product->ingredients()->delete();
+            
+            // Import costs
+            $sortOrder = 0;
+            foreach ($costColumns as $col => $costName) {
+                $costValue = $sheet->getCell($col . $row)->getValue();
+                if (!empty($costValue)) {
+                    $isPercentage = false;
+                    $cleanValue = $costValue;
+                    
+                    // Check if it's a percentage
+                    if (is_string($costValue) && strpos($costValue, '%') !== false) {
+                        $isPercentage = true;
+                        $cleanValue = str_replace('%', '', $costValue);
+                    }
+                    
+                    $product->costs()->create([
+                        'name' => $costName,
+                        'cost' => floatval($cleanValue),
+                        'is_percentage' => $isPercentage,
+                        'sort_order' => $sortOrder++
+                    ]);
+                }
+            }
+            
+            // Import ingredients
+            foreach ($ingredientColumns as $col => $ingredientName) {
+                $ingredientCost = $sheet->getCell($col . $row)->getValue();
+                if (!empty($ingredientCost)) {
+                    $product->ingredients()->create([
+                        'name' => $ingredientName,
+                        'cost' => floatval($ingredientCost)
+                    ]);
+                }
+            }
         }
     }
 

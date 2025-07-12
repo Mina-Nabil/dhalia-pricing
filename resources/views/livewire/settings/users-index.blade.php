@@ -193,7 +193,8 @@
                             {{ $type }}</option>
                     @endforeach
                 </x-select>
-                @if (!$setUserSec)
+                
+                @if ($setUserSec === true)
                     <x-text-input wire:model="password" label="Password" type="password"
                         errorMessage="{{ $errors->first('password') }}" />
 
@@ -203,8 +204,13 @@
 
             </x-slot>
             <x-slot name="footer">
-                <x-primary-button wire:click.prevent="addNewUser" loadingFunction="addNewUser">Create
-                    User</x-primary-button>
+                @if ($setUserSec === true)
+                    <x-primary-button wire:click.prevent="addNewUser" loadingFunction="addNewUser">Create
+                        User</x-primary-button>
+                @else
+                    <x-primary-button wire:click.prevent="EditUser" loadingFunction="EditUser">Update
+                        User</x-primary-button>
+                @endif
             </x-slot>
         </x-modal>
     @endif

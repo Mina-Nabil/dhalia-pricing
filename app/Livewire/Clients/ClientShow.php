@@ -26,6 +26,13 @@ class ClientShow extends Component
     // Edit mode flag
     public $editMode = false;
 
+    // User management properties
+    public $selectedUserIds = [];
+    public $userToRemove = null;
+    public $removeUserConfirmationModal = false;
+
+    protected $listeners = ['usersSelected'];
+
     public function boot()
     {
         $this->clientService = app(ClientServiceProvider::class);
@@ -35,6 +42,7 @@ class ClientShow extends Component
     {
         $this->client = $this->clientService->getClient($client_id);
         $this->loadClientData();
+        $this->loadCurrentUserIds();
     }
 
     public function loadClientData()
@@ -44,6 +52,11 @@ class ClientShow extends Component
         $this->clientAddress = $this->client->address;
         $this->clientEmail = $this->client->email;
         $this->clientNotes = $this->client->notes;
+    }
+
+    public function loadCurrentUserIds()
+    {
+        $this->selectedUserIds = $this->client->users->pluck('id')->toArray();
     }
 
     public function toggleEditMode()
@@ -95,6 +108,56 @@ class ClientShow extends Component
         $this->editMode = false;
         $this->loadClientData();
         $this->resetValidation();
+    }
+
+    public function usersSelected($userIds)
+    {
+        try {
+            $this->clientService->addUsersToClient($this->client, $userIds);
+
+            // Refresh the client data
+            $this->client = $this->clientService->getClient($this->client->id);
+            $this->loadCurrentUserIds();
+
+            $this->alert('success', 'Users updated successfully');
+        } catch (ClientManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (\Exception $e) {
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function confirmRemoveUser($userId)
+    {
+        $this->userToRemove = $userId;
+        $this->removeUserConfirmationModal = true;
+    }
+
+    public function removeUser()
+    {
+        if ($this->userToRemove) {
+            try {
+                $this->clientService->removeUserFromClient($this->client, $this->userToRemove);
+
+                // Refresh the client data
+                $this->client = $this->clientService->getClient($this->client->id);
+                $this->loadCurrentUserIds();
+
+                $this->alert('success', 'User removed successfully');
+            } catch (ClientManagementException $e) {
+                $this->alert('error', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->alert('error', 'An unexpected error occurred');
+            }
+        }
+
+        $this->closeRemoveUserConfirmationModal();
+    }
+
+    public function closeRemoveUserConfirmationModal()
+    {
+        $this->removeUserConfirmationModal = false;
+        $this->userToRemove = null;
     }
 
     public function render()

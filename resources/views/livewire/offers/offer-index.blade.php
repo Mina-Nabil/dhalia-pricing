@@ -181,9 +181,9 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                             @forelse($offers as $offer)
-                            <tr wire:click="goToOfferShow({{ $offer->id }})" class="cursor-pointer">
+                            <tr>
                                     <td class="table-td whitespace-nowrap">{{ $offer->user->name ?? 'N/A' }}</td>
-                                    <td class="table-td font-medium whitespace-nowrap">{{ $offer->code }}</td>
+                                    <td class="table-td font-medium whitespace-nowrap cursor-pointer hover:underline" wire:click="goToOfferShow({{ $offer->id }})">{{ $offer->code }}</td>
                                     <td class="table-td whitespace-nowrap">{{ $offer->client->name ?? 'N/A' }}</td>
                                     <td class="table-td whitespace-nowrap">
                                         <span
@@ -213,13 +213,8 @@
                                                 class="action-btn text-primary">
                                                 <iconify-icon icon="heroicons:eye"></iconify-icon>
                                             </button>
-                                            @can('update', $offer)
-                                                <button class="action-btn text-primary">
-                                                    <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
-                                                </button>
-                                            @endcan
                                             @can('delete', $offer)
-                                                <button wire:click="confirmDeleteOffer({{ $offer->id }})"
+                                                <button wire:click.prevent="confirmDeleteOffer({{ $offer->id }})"
                                                     class="action-btn text-danger">
                                                     <iconify-icon icon="heroicons:trash"></iconify-icon>
                                                 </button>

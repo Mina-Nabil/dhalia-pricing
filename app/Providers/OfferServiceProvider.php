@@ -55,10 +55,10 @@ class OfferServiceProvider extends ServiceProvider
         }
 
         $query = Offer::query()
-        ->with($with)
-        ->when(!$returnAll, function ($query) {
-            $query->where('user_id', Auth::id());
-        })
+            ->with($with)
+            ->when(!$returnAll, function ($query) {
+                $query->where('user_id', Auth::id());
+            })
             ->when($search, function ($query) use ($search) {
                 $query->search($search);
             })
@@ -169,12 +169,12 @@ class OfferServiceProvider extends ServiceProvider
             DB::transaction(function () use ($offer, $offerItems) {
                 $offer->save();
                 $offer->items()->createMany($offerItems);
-                $offer->refresh();
                 foreach ($offer->items as $item) {
                     if (isset($item['ingredients']) && is_array($item['ingredients']) && count($item['ingredients']) > 0) {
                         $item->ingredients()->createMany($item['ingredients']);
                     }
                 }
+                $offer->refresh();
             });
         } catch (Exception $e) {
             report($e);
@@ -275,6 +275,6 @@ class OfferServiceProvider extends ServiceProvider
         Gate::define('view-offer', [OfferPolicy::class, 'view']);
         Gate::define('create-offers', [OfferPolicy::class, 'create']);
         Gate::define('update-offer', [OfferPolicy::class, 'update']);
-        Gate::define('delete-offers', [OfferPolicy::class, 'delete']);
+        Gate::define('delete-offer', [OfferPolicy::class, 'delete']);
     }
 }

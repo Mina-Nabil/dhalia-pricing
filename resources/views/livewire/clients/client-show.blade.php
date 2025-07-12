@@ -15,10 +15,10 @@
     </div>
 
     <!-- Two Cards Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         <!-- Left Column: Client Information Card -->
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-3">
             <x-card title="Client Information">
                 <x-slot name="tools">
                     @if (!$editMode)
@@ -38,19 +38,19 @@
                                 errorMessage="{{ $errors->first('clientName') }}" />
 
                             <x-text-input wire:model="clientPhone" label="Phone Number"
-                                errorMessage="{{ $errors->first('clientPhone') }}" 
+                                errorMessage="{{ $errors->first('clientPhone') }}"
                                 placeholder="e.g., +1 234 567 8900" />
 
                             <x-text-input wire:model="clientEmail" label="Email Address" type="email"
-                                errorMessage="{{ $errors->first('clientEmail') }}" 
+                                errorMessage="{{ $errors->first('clientEmail') }}"
                                 placeholder="e.g., john@example.com" />
 
                             <x-textarea wire:model="clientAddress" label="Address" rows="3"
-                                placeholder="Enter client address..." 
+                                placeholder="Enter client address..."
                                 errorMessage="{{ $errors->first('clientAddress') }}" />
 
                             <x-textarea wire:model="clientNotes" label="Notes" rows="3"
-                                placeholder="Any additional notes about the client..." 
+                                placeholder="Any additional notes about the client..."
                                 errorMessage="{{ $errors->first('clientNotes') }}" />
                         </div>
 
@@ -150,14 +150,44 @@
         </div>
 
         <!-- Right Column: Users Table Card -->
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-2">
             <x-card title="Associated Users">
+                <x-slot name="tools">
+                    @can('update-client-users', $client)
+                        <livewire:components.select-users-modal :selectedUserIds="$selectedUserIds" :iconButton="true" />
+                    @endcan
+                </x-slot>
                 <div class="space-y-4">
+                    @if ($client->createdBy)
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+                            <p
+                                class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3 uppercase tracking-wide">
+                                Created By:</p>
+                            <div
+                                class="flex items-center space-x-3 py-2 px-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 bg-slate-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-sm font-medium">
+                                            {{ strtoupper(substr($client->createdBy->name, 0, 1)) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-slate-900 dark:text-white font-medium">
+                                        {{ $client->createdBy->name }}
+                                    </p>
+                                    <p class="text-slate-500 dark:text-slate-400 text-sm">
+                                        {{ $client->createdBy->username }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @if ($client->users->count() > 0)
                         <div class="space-y-3">
                             <p
                                 class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 uppercase tracking-wide">
-                                Users with access to this client:</p>
+                                More users with access to this client:</p>
                             @foreach ($client->users as $user)
                                 <div
                                     class="flex justify-between items-center py-3 px-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -171,14 +201,16 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <p class="text-slate-900 dark:text-white font-medium">{{ $user->name }}</p>
-                                            <p class="text-slate-500 dark:text-slate-400 text-sm">{{ $user->username }}</p>
-                                            <p class="text-slate-500 dark:text-slate-400 text-sm">
-                                                {{ $user->pivot->offers_count }} offers
+                                            <p class="text-slate-900 dark:text-white font-medium">{{ $user->name }}
                                             </p>
+                                            <p class="text-slate-500 dark:text-slate-400 text-sm">{{ $user->username }}
+                                            </p>
+                                            {{-- <p class="text-slate-500 dark:text-slate-400 text-sm">
+                                                {{ $user->pivot->offers_count }} offers
+                                            </p> --}}
                                         </div>
                                     </div>
-                                    <div class="flex items-center">
+                                    <div class="flex items-center space-x-2">
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                             @if ($user->role === 'admin') bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
@@ -186,6 +218,13 @@
                                             @else bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 @endif">
                                             {{ ucfirst($user->role) }}
                                         </span>
+                                        @can('update-client-users', $client)
+                                            <button wire:click="confirmRemoveUser({{ $user->id }})"
+                                                class="btn btn-sm btn-outline-danger hover:bg-danger-500 hover:text-white"
+                                                title="Remove User">
+                                                <iconify-icon class="text-sm" icon="heroicons:x-mark" />
+                                            </button>
+                                        @endcan
                                     </div>
                                 </div>
                             @endforeach
@@ -214,29 +253,44 @@
                         </div>
                     @endif
 
-                    @if ($client->createdBy)
-                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-                            <p class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3 uppercase tracking-wide">
-                                Created By:</p>
-                            <div class="flex items-center space-x-3 py-2 px-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-slate-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm font-medium">
-                                            {{ strtoupper(substr($client->createdBy->name, 0, 1)) }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-slate-900 dark:text-white font-medium">{{ $client->createdBy->name }}
-                                    </p>
-                                    <p class="text-slate-500 dark:text-slate-400 text-sm">
-                                        {{ $client->createdBy->username }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+
                 </div>
             </x-card>
         </div>
     </div>
+
+
+
+    <!-- Remove User Confirmation Modal -->
+    @if ($removeUserConfirmationModal)
+        <x-modal wire:model="removeUserConfirmationModal">
+            <x-slot name="title">
+                Remove User
+            </x-slot>
+            <x-slot name="content">
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0">
+                        <iconify-icon icon="heroicons:exclamation-triangle"
+                            class="text-warning-500 text-6xl"></iconify-icon>
+                    </div>
+                    <div>
+                        <p class="text-slate-600 dark:text-slate-300 mb-2">
+                            Are you sure you want to remove this user from the client?
+                        </p>
+                        <div class="text-warning-500 text-sm">
+                            <p>This will revoke the user's access to this client.</p>
+                        </div>
+                    </div>
+                </div>
+            </x-slot>
+            <x-slot name="footer">
+                <x-secondary-button wire:click="closeRemoveUserConfirmationModal">
+                    Cancel
+                </x-secondary-button>
+                <x-danger-button wire:click="removeUser" loadingFunction="removeUser">
+                    Remove User
+                </x-danger-button>
+            </x-slot>
+        </x-modal>
+    @endif
 </div>

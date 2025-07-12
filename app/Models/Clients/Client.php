@@ -44,7 +44,7 @@ class Client extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'client_users', 'client_id', 'user_id')->withPivot('offers_count');
+        return $this->belongsToMany(User::class, 'client_users', 'client_id', 'user_id');
     }
 
     public function infos(): HasMany

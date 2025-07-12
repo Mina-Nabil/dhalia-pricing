@@ -127,17 +127,13 @@ class UsersIndex extends Component
     {
         $currentUserId = $this->setUserSec;
         $this->validate([
-            'username' => [
-                'required',
-                'max:255',
-                'unique:users,username,' . $currentUserId,
-            ],
+            'username' => 'required|string|max:255|unique:users,username,' . $currentUserId,
             'name' => 'required|string|max:255',
             'role' => 'required|in:' . implode(',', User::ROLES),
         ]);
 
         try {
-            $this->userService->updateUser(User::find($currentUserId), $this->username, $this->name, $this->type);
+            $this->userService->updateUser(User::find($currentUserId), $this->username, $this->name, $this->role);
             $this->closeSetUserSec();
             $this->alertSuccess('User updated successfuly!');
         } catch (UserManagementException $e) {
@@ -152,6 +148,7 @@ class UsersIndex extends Component
 
     public function openNewUserSec()
     {
+        $this->reset(['username', 'name', 'role', 'password', 'password_confirmation']);
         $this->setUserSec = true;
     }
 
@@ -168,6 +165,7 @@ class UsersIndex extends Component
         try {
             $this->userService->createUser($this->username, $this->name, $this->password, $this->role);
             $this->alertSuccess('User added successfuly!');
+            $this->closeSetUserSec();
         } catch (UserManagementException $e) {
             $this->alertError($e->getMessage());
         } catch (AuthorizationException $e) {

@@ -12,15 +12,19 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class ProductsIndex extends Component
 {
-    use WithPagination, AlertFrontEnd;
+    use WithPagination, AlertFrontEnd, WithFileUploads;
 
     protected $productService;
     protected $specService;
 
     public $search = '';
+    
+    // File upload for import
+    public $importFile;
     
     // Modal states
     public $newCategoryModal = false;
@@ -85,6 +89,13 @@ class ProductsIndex extends Component
                 'selectedCategoryId' => 'required|exists:product_categories,id',
                 'baseCost' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
                 'selectedSpecId' => 'required|exists:specs,id',
+            ]);
+        }
+
+        // Import file validation
+        if ($this->importFile) {
+            $rules = array_merge($rules, [
+                'importFile' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
             ]);
         }
 
@@ -249,6 +260,62 @@ class ProductsIndex extends Component
         } catch (Exception $e) {
             report($e);
             $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    // Export and Import methods
+    public function exportProducts()
+    {
+        try {
+            $this->authorize('viewAny', Product::class);
+            
+            $filePath = $this->productService->exportProductsToExcel();
+            
+            $this->alert('success', 'Products exported successfully');
+            
+            return response()->download($filePath)->deleteFileAfterSend(true);
+            
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Export failed: ' . $e->getMessage());
+        }
+    }
+
+    public function importProducts()
+    {
+        try {
+            $this->authorize('create', Product::class);
+            
+            // Validate the uploaded file
+            $this->validate([
+                'importFile' => 'required|file|mimes:xlsx,xls|max:10240'
+            ]);
+            
+            if (!$this->importFile) {
+                $this->alert('error', 'Please select a file to import');
+                return;
+            }
+            
+            // Get the temporary file path
+            $filePath = $this->importFile->getRealPath();
+            
+            // Import the products
+            $this->productService->importProductsFromExcel($filePath);
+            
+            $this->alert('success', 'Products imported successfully');
+            
+            // Reset the file input
+            $this->importFile = null;
+            
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Import failed: ' . $e->getMessage());
         }
     }
 

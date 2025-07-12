@@ -15,6 +15,7 @@ class SelectUsersModal extends Component
     public $selectedUserIds = [];
     public $selectedUserNames = [];
     public $originalSelectedUserIds = [];
+    public $iconButton = false;
 
     protected $userService;
     protected $paginationTheme = 'simple-bootstrap';

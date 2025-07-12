@@ -53,9 +53,9 @@
                             <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                 @forelse($clients as $client)
                                     <tr>
-                                        <td class="table-td">
+                                        <td class="table-td whitespace-nowrap hover:underline" wire:click="goToClientShow({{ $client->id }})">
                                             <div class="flex items-center">
-                                                <div class="font-medium text-slate-600 dark:text-slate-300">
+                                                <div class="font-medium text-slate-600 dark:text-slate-300 hover:cursor-pointer">
                                                     {{ $client->name }}
                                                 </div>
                                             </div>

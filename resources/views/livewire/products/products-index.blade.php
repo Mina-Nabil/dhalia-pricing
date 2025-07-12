@@ -7,7 +7,35 @@
             </h4>
         </div>
         <div class="flex sm:space-x-4 space-x-2 sm:justify-end items-center md:mb-6 mb-4 rtl:space-x-reverse">
-            @can('create', App\Models\Products\Product::class)
+            @can('create-product')
+                <button wire:click="exportProducts"
+                    class="btn inline-flex justify-center btn-success dark:bg-green-600 dark:text-slate-300 m-1"
+                    wire:loading.attr="disabled" wire:target="exportProducts">
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:download-bold" wire:loading.remove wire:target="exportProducts"></iconify-icon>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading wire:target="exportProducts"></iconify-icon>
+                    <span wire:loading.remove wire:target="exportProducts">Export Products</span>
+                    <span wire:loading wire:target="exportProducts">Exporting...</span>
+                </button>
+            @endcan
+            @can('create-product')
+                <div class="flex items-center space-x-2">
+                    <input type="file" wire:model="importFile" accept=".xlsx,.xls" class="hidden" id="importFileInput">
+                    <button onclick="document.getElementById('importFileInput').click()"
+                        class="btn inline-flex justify-center btn-warning dark:bg-yellow-600 dark:text-slate-300 m-1">
+                        <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:upload-bold"></iconify-icon>
+                        Import Products
+                    </button>
+                    @if($importFile)
+                        <button wire:click="importProducts"
+                            class="btn inline-flex justify-center btn-info dark:bg-blue-600 dark:text-slate-300 m-1"
+                            wire:loading.attr="disabled" wire:target="importProducts">
+                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:check-bold" wire:loading.remove wire:target="importProducts"></iconify-icon>
+                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading wire:target="importProducts"></iconify-icon>
+                            <span wire:loading.remove wire:target="importProducts">Import Products</span>
+                            <span wire:loading wire:target="importProducts">Importing...</span>
+                        </button>
+                    @endif
+                </div>
                 <button wire:click="openNewCategory"
                     class="btn inline-flex justify-center btn-dark dark:bg-slate-700 dark:text-slate-300 m-1">
                     <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:plus-bold"></iconify-icon>
@@ -19,6 +47,31 @@
                     Create Product
                 </button>
             @endcan
+        </div>
+    </div>
+
+    <!-- Import File Information -->
+    @if($importFile)
+        <div class="mb-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+                <div class="flex items-center">
+                    <iconify-icon class="text-blue-600 text-xl mr-2" icon="ph:file-bold"></iconify-icon>
+                    <span class="text-blue-800">Selected file: {{ $importFile->getClientOriginalName() }}</span>
+                </div>
+                @error('importFile')
+                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+    @endif
+
+    <!-- File Upload Progress -->
+    <div wire:loading wire:target="importFile" class="mb-4">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            <div class="flex items-center">
+                <iconify-icon class="text-yellow-600 text-xl mr-2 animate-spin" icon="ph:spinner-bold"></iconify-icon>
+                <span class="text-yellow-800">Uploading file...</span>
+            </div>
         </div>
     </div>
 
@@ -111,7 +164,7 @@
                                     class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                     @forelse($products as $product)
                                         <tr>
-                                            <td class="table-td whitespace-nowrap">{{ $product->name }}</td>
+                                            <td class="table-td whitespace-nowrap hover:cursor-pointer hover:underline" wire:click="goToProductShow({{ $product->id }})">{{ $product->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ $product->category->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ $product->spec->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ number_format($product->base_cost, 2) }}</td>
@@ -261,6 +314,14 @@
                     <option value="">Select a category</option>
                     @foreach ($allCategories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </x-select>
+
+                <x-select wire:model="selectedSpecId" label="Spec" 
+                    errorMessage="{{ $errors->first('selectedSpecId') }}">
+                    <option value="">Select a spec</option>
+                    @foreach ($allSpecs as $spec)
+                        <option value="{{ $spec->id }}">{{ $spec->name }}</option>
                     @endforeach
                 </x-select>
 

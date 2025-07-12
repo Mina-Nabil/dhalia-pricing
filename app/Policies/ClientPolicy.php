@@ -40,6 +40,11 @@ class ClientPolicy
         return $user->is_admin || $client->created_by_id == $user->id || $client->users->contains('user_id', $user->id);
     }
 
+    public function updateUsers(User $user, Client $client): bool
+    {
+        return $user->is_admin;
+    }
+
     /**
      * Determine whether the user can delete the model.
      */
