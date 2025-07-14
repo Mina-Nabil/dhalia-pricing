@@ -22,8 +22,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('dev@smart'),
         ]);
         User::create([
-            'name' => 'magdy',
-            'username' => 'Magdy El Wahsh',
+            'name' => 'Magdy El Wahsh',
+            'username' => 'magdy',
             'role' => User::ROLE_ADMIN,
             'is_active' => true,
             'password' => Hash::make('magdy@dhalia'),
