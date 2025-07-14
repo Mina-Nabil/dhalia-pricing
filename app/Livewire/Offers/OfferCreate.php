@@ -286,7 +286,7 @@ class OfferCreate extends Component
         $ingredientsCost = 0;
         if (isset($item['ingredients']) && is_array($item['ingredients'])) {
             foreach ($item['ingredients'] as $ingredient) {
-                $ingredientsCost += ($item['quantity_in_kgs'] * (($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100));
+                $ingredientsCost += (($item['quantity_in_kgs'] / 1000) * (($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100));
             }
         }
 
