@@ -45,6 +45,10 @@
                                 errorMessage="{{ $errors->first('clientEmail') }}"
                                 placeholder="e.g., john@example.com" />
 
+                            <x-text-input wire:model="clientCountryName" label="Country"
+                                errorMessage="{{ $errors->first('clientCountryName') }}"
+                                placeholder="e.g., USA" />
+
                             <x-textarea wire:model="clientAddress" label="Address" rows="3"
                                 placeholder="Enter client address..."
                                 errorMessage="{{ $errors->first('clientAddress') }}" />
@@ -106,6 +110,15 @@
                                 {{ $client->created_at->format('M d, Y') }}</p>
                         </div>
                     </div>
+
+                    @if ($client->country_name)
+                        <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                            <label
+                                class="form-label font-medium text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wide">Country</label>
+                            <p class="text-slate-600 dark:text-slate-400 mt-2 text-base">
+                                {{ $client->country_name }}</p>
+                        </div>
+                    @endif
 
                     @if ($client->address)
                         <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">

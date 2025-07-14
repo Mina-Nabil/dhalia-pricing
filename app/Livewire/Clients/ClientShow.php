@@ -6,6 +6,8 @@ use App\Exceptions\ClientManagementException;
 use App\Models\Clients\Client;
 use App\Providers\ClientServiceProvider;
 use App\Traits\AlertFrontEnd;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Livewire\Component;
 
 class ClientShow extends Component
@@ -22,6 +24,7 @@ class ClientShow extends Component
     public $clientAddress = '';
     public $clientEmail = '';
     public $clientNotes = '';
+    public $clientCountryName = '';
 
     // Edit mode flag
     public $editMode = false;
@@ -52,6 +55,7 @@ class ClientShow extends Component
         $this->clientAddress = $this->client->address;
         $this->clientEmail = $this->client->email;
         $this->clientNotes = $this->client->notes;
+        $this->clientCountryName = $this->client->country_name;
     }
 
     public function loadCurrentUserIds()
@@ -78,6 +82,7 @@ class ClientShow extends Component
             'clientAddress' => 'nullable|string|max:500',
             'clientEmail' => 'nullable|email|max:255',
             'clientNotes' => 'nullable|string|max:1000',
+            'clientCountryName' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -87,7 +92,8 @@ class ClientShow extends Component
                 $this->clientPhone,
                 $this->clientAddress,
                 $this->clientEmail,
-                $this->clientNotes
+                $this->clientNotes,
+                $this->clientCountryName
             );
 
             // Refresh the client data
@@ -98,7 +104,10 @@ class ClientShow extends Component
             $this->alert('success', 'Client updated successfully');
         } catch (ClientManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -122,7 +131,10 @@ class ClientShow extends Component
             $this->alert('success', 'Users updated successfully');
         } catch (ClientManagementException $e) {
             $this->alert('error', $e->getMessage());
-        } catch (\Exception $e) {
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
             $this->alert('error', 'An unexpected error occurred');
         }
     }
@@ -146,7 +158,10 @@ class ClientShow extends Component
                 $this->alert('success', 'User removed successfully');
             } catch (ClientManagementException $e) {
                 $this->alert('error', $e->getMessage());
-            } catch (\Exception $e) {
+            } catch (AuthorizationException $e) {
+                $this->alert('error', $e->getMessage());
+            } catch (Exception $e) {
+                report($e);
                 $this->alert('error', 'An unexpected error occurred');
             }
         }

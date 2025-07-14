@@ -68,7 +68,8 @@ class OfferItem extends Model
         'agent_commission_type',
         'agent_commission_total_cost',
         'total_costs',
-        'total_profit'
+        'total_profit',
+        'ingredients',
     ];
 
     public function offer(): BelongsTo

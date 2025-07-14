@@ -76,6 +76,26 @@
                         </h6>
 
                         {{-- Product Selection --}}
+                        <x-select wire:model="offerItems.{{ $index }}.category_id"
+                            wire:change="categoryIdSelected({{ $index }})"
+                            id="offerItems.{{ $index }}.category_id" class="form-control mb-3" :label="__('Category')"
+                            errorMessage="{{ $errors->first('offerItems.' . $index . '.category_id') }}">
+                            <option value="">Select Category</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </x-select>
+                        {{-- Product Selection --}}
+                        <x-select wire:model="offerItems.{{ $index }}.spec_id"
+                            wire:change="specIdSelected({{ $index }})"
+                            id="offerItems.{{ $index }}.spec_id" class="form-control mb-3" :label="__('Spec')"
+                            errorMessage="{{ $errors->first('offerItems.' . $index . '.spec_id') }}">
+                            <option value="">Select Specs</option>
+                            @foreach ($specs as $spec)
+                                <option value="{{ $spec->id }}">{{ $spec->name }}</option>
+                            @endforeach
+                        </x-select>
+                        {{-- Product Selection --}}
                         <x-select wire:model="offerItems.{{ $index }}.product_id"
                             wire:change="productIdSelected({{ $index }})"
                             id="offerItems.{{ $index }}.product_id" class="form-control mb-3" :label="__('Product')"

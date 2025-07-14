@@ -13,13 +13,30 @@
                     <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:plus-bold"></iconify-icon>
                     Create Client
                 </button>
+                <button wire:click="openImportModal"
+                    class="btn inline-flex justify-center btn-primary dark:bg-blue-600 dark:text-slate-300 m-1">
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:upload-bold"></iconify-icon>
+                    Import
+                </button>
+            @endcan
+            @can('view-client-any')
+                <button wire:click="exportClients"
+                    class="btn inline-flex justify-center btn-success dark:bg-green-600 dark:text-slate-300 m-1"
+                    wire:loading.attr="disabled" wire:target="exportClients">
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:download-bold" wire:loading.remove
+                        wire:target="exportClients"></iconify-icon>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading
+                        wire:target="exportClients"></iconify-icon>
+                    <span wire:loading.remove wire:target="exportClients">Export</span>
+                    <span wire:loading wire:target="exportClients">Exporting...</span>
+                </button>
             @endcan
         </div>
     </div>
 
     <!-- Search Bar -->
     <div class="flex flex-wrap sm:flex-nowrap justify-between space-x-3 rtl:space-x-reverse mb-6">
-        <div class="flex-0 w-full sm:w-auto mb-3 sm:mb-0">
+        <div class="flex-1 w-full sm:w-auto mb-3 sm:mb-0">
             <div class="relative">
                 <input type="text" class="form-control pl-10" placeholder="Search by name, phone, or email..."
                     wire:model.live.debounce.300ms="search">
@@ -53,9 +70,11 @@
                             <tbody class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                 @forelse($clients as $client)
                                     <tr>
-                                        <td class="table-td whitespace-nowrap hover:underline" wire:click="goToClientShow({{ $client->id }})">
+                                        <td class="table-td whitespace-nowrap hover:underline"
+                                            wire:click="goToClientShow({{ $client->id }})">
                                             <div class="flex items-center">
-                                                <div class="font-medium text-slate-600 dark:text-slate-300 hover:cursor-pointer">
+                                                <div
+                                                    class="font-medium text-slate-600 dark:text-slate-300 hover:cursor-pointer">
                                                     {{ $client->name }}
                                                 </div>
                                             </div>
@@ -122,6 +141,58 @@
         </div>
     </div>
 
+
+    <!-- Import Modal -->
+    @if ($importModal)
+        <x-modal wire:model="importModal">
+            <x-slot name="title">
+                Import Clients from Excel
+            </x-slot>
+            <x-slot name="content">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-slate-600 dark:text-slate-300 mb-4">
+                            Upload an Excel file to import clients. The file should have the following columns:
+                        </p>
+                        <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded text-sm">
+                            <strong>Required format:</strong><br>
+                            A: Client Name | B: Phone | C: Email | D: Address | E: Country | F: Notes
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="import-file-modal" class="form-label">Select Excel File</label>
+                        <input type="file" wire:model="importFile" id="import-file-modal" 
+                            class="form-control" 
+                            accept=".xlsx,.xls">
+                        @error('importFile') 
+                            <span class="text-danger-500 text-xs mt-1">{{ $message }}</span> 
+                        @enderror
+                    </div>
+                    
+                    <div class="text-sm text-slate-500 dark:text-slate-400">
+                        <p><strong>Note:</strong> Existing clients (matched by name) will be updated. New clients will be created.</p>
+                    </div>
+                </div>
+            </x-slot>
+            <x-slot name="footer">
+                <x-secondary-button wire:click="closeImportModal">
+                    Cancel
+                </x-secondary-button>
+                <button wire:click="importClients"
+                    class="btn inline-flex justify-center btn-primary"
+                    wire:loading.attr="disabled" wire:target="importClients"
+                    {{ !$importFile ? 'disabled' : '' }}>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:upload-bold" wire:loading.remove
+                        wire:target="importClients"></iconify-icon>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading
+                        wire:target="importClients"></iconify-icon>
+                    <span wire:loading.remove wire:target="importClients">Import Clients</span>
+                    <span wire:loading wire:target="importClients">Importing...</span>
+                </button>
+            </x-slot>
+        </x-modal>
+    @endif
 
     <!-- Delete Confirmation Modal -->
     @if ($deleteConfirmationModal)

@@ -22,6 +22,7 @@ class Client extends Model
         'email',
         'notes',
         'created_by_id',
+        'country_name',
     ];
 
     public function scopeSearch($query, $search)

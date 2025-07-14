@@ -17,6 +17,7 @@ class OfferIndex extends Component
 {
     use WithPagination, AlertFrontEnd;
 
+    /** @var OfferServiceProvider */
     protected $offerService;
     protected $clientService;
     protected $userService;
@@ -30,6 +31,8 @@ class OfferIndex extends Component
     public $filterDateTo = '';
     public $filterPriceFrom = '';
     public $filterPriceTo = '';
+    public $filterProfitFrom = '';
+    public $filterProfitTo = '';
     public $sort = 'created_at';
     public $sortDirection = 'desc';
 
@@ -143,6 +146,8 @@ class OfferIndex extends Component
         $this->filterDateTo = '';
         $this->filterPriceFrom = '';
         $this->filterPriceTo = '';
+        $this->filterProfitFrom = '';
+        $this->filterProfitTo = '';
         $this->sort = 'created_at';
         $this->sortDirection = 'desc';
         $this->resetPage();
@@ -206,6 +211,41 @@ class OfferIndex extends Component
         $this->closeDeleteConfirmationModal();
     }
 
+    public function exportOffers()
+    {
+        try {
+            $this->authorize('canExport', Offer::class);
+            
+            $filePath = $this->offerService->exportOffersToExcel(
+                search: $this->search ?: null,
+                user_ids: $this->filterUserIds,
+                client_ids: $this->filterClientIds,
+                statuses: $this->filterStatuses,
+                date_from: $this->filterDateFrom ?: null,
+                date_to: $this->filterDateTo ?: null,
+                price_from: $this->filterPriceFrom ?: null,
+                price_to: $this->filterPriceTo ?: null,
+                profit_from: $this->filterProfitFrom ?: null,
+                profit_to: $this->filterProfitTo ?: null,
+                sort: $this->sort,
+                sort_direction: $this->sortDirection,
+                filename: 'offers_export_' . date('Y-m-d_H-i-s') . '.xlsx'
+            );
+            
+            $this->alert('success', 'Offers exported successfully');
+            
+            return response()->download($filePath)->deleteFileAfterSend(true);
+            
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (OfferManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Export failed: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         $offers = $this->offerService->getOffers(
@@ -217,6 +257,8 @@ class OfferIndex extends Component
             date_to: $this->filterDateTo ?: null,
             price_from: $this->filterPriceFrom ?: null,
             price_to: $this->filterPriceTo ?: null,
+            profit_from: $this->filterProfitFrom ?: null,
+            profit_to: $this->filterProfitTo ?: null,
             paginate: 10,
             sort: $this->sort,
             sort_direction: $this->sortDirection,

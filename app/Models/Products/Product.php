@@ -46,6 +46,11 @@ class Product extends Model
         return $query->where('product_category_id', $categoryId);
     }
 
+    public function scopeBySpec($query, $specId)
+    {
+        return $query->where('spec_id', $specId);
+    }
+
     //relations
     public function category()
     {

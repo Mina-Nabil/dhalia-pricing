@@ -17,6 +17,22 @@ class OfferPolicy
     }
 
     /**
+     * Determine whether the user can view any models.
+     */
+    public function viewProfit(User $user): bool
+    {
+        return $user->is_admin;
+    }
+
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function canExport(User $user): bool
+    {
+        return $user->is_admin;
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Offer $offer): bool

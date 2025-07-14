@@ -95,7 +95,7 @@ class ProductServiceProvider extends ServiceProvider
     }
 
     // Product methods
-    public function getProducts($search = null, $paginate = 10, $categoryId = null, $forDropdown = false)
+    public function getProducts($search = null, $paginate = 10, $categoryId = null, $forDropdown = false, $specId = null)
     {
         $query = Product::query()
             ->with('spec', 'category')
@@ -104,6 +104,9 @@ class ProductServiceProvider extends ServiceProvider
             })
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->byCategory($categoryId);
+            })
+            ->when($specId, function ($query) use ($specId) {
+                $query->bySpec($specId);
             })
             ->orderBy('product_category_id')
             ->orderBy('spec_id')

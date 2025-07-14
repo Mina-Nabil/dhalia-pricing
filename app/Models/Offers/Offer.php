@@ -92,6 +92,26 @@ class Offer extends Model
         return $query->where('created_at', '<=', $date_to);
     }
 
+    public function scopeProfitFrom($query, $profit_from)
+    {
+        return $query->where('total_profit', '>=', $profit_from);
+    }
+
+    public function scopeProfitTo($query, $profit_to)
+    {
+        return $query->where('total_profit', '<=', $profit_to);
+    }
+
+    public function scopePriceFrom($query, $price_from)
+    {
+        return $query->where('total_price', '>=', $price_from);
+    }
+
+    public function scopePriceTo($query, $price_to)
+    {
+        return $query->where('total_price', '<=', $price_to);
+    }
+
     //relations
     public function user(): BelongsTo
     {

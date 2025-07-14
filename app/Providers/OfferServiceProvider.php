@@ -11,7 +11,14 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class OfferServiceProvider extends ServiceProvider
 {
@@ -19,7 +26,9 @@ class OfferServiceProvider extends ServiceProvider
     const SORT_FIELDS = [
         'created_at',
         'total_price',
-        'total_tonnage'
+        'total_tonnage',
+        'total_profit',
+        'code'
     ];
 
     /**
@@ -38,7 +47,7 @@ class OfferServiceProvider extends ServiceProvider
      * @param string $sort_direction
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function getOffers($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $paginate = 10, $sort = 'created_at', $sort_direction = 'desc', $with = [])
+    public function getOffers($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $profit_from = null, $profit_to = null, $paginate = 10, $sort = 'created_at', $sort_direction = 'desc', $with = [])
     {
 
         if (!in_array($sort, self::SORT_FIELDS)) {
@@ -83,6 +92,12 @@ class OfferServiceProvider extends ServiceProvider
             ->when($price_to, function ($query) use ($price_to) {
                 $query->priceTo($price_to);
             })
+            ->when($profit_from, function ($query) use ($profit_from) {
+                $query->profitFrom($profit_from);
+            })
+            ->when($profit_to, function ($query) use ($profit_to) {
+                $query->profitTo($profit_to);
+            })
             ->orderBy($sort, $sort_direction);
 
         AppLog::info('Offers list viewed', 'Offers loaded');
@@ -92,6 +107,7 @@ class OfferServiceProvider extends ServiceProvider
 
     public function getOffer($id, $log = true)
     {
+        Log::info('getOffer', ['id' => $id, 'log' => $log]);
         $offer = Offer::find($id);
         if (!$offer) throw new OfferManagementException('Offer not found');
         Gate::authorize('view-offer', $offer);
@@ -220,14 +236,189 @@ class OfferServiceProvider extends ServiceProvider
         return true;
     }
 
-    private function checkOfferItemsArray($offerItems)
+    public function exportOffersToExcel($search = null, $user_ids = [], $client_ids = [], $statuses = [], $date_from = null, $date_to = null, $price_from = null, $price_to = null, $profit_from = null, $profit_to = null, $sort = 'created_at', $sort_direction = 'desc', $filename = 'offers_export.xlsx')
+    {
+        Gate::authorize('can-export-offers');
+
+        try {
+            // Get all offers with the same filters (no pagination)
+            $offers = $this->getOffers(
+                search: $search,
+                user_ids: $user_ids,
+                client_ids: $client_ids,
+                statuses: $statuses,
+                date_from: $date_from,
+                date_to: $date_to,
+                price_from: $price_from,
+                price_to: $price_to,
+                profit_from: $profit_from,
+                profit_to: $profit_to,
+                paginate: false, // Get all data, not paginated
+                sort: $sort,
+                sort_direction: $sort_direction,
+                with: ['user', 'client', 'currency', 'items.product']
+            );
+
+            // Create new spreadsheet
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Offers Export');
+            if (Gate::check('view-offers-profit')) {
+                $columnIndeces = [
+                    'Offer Code' => 'A',
+                    'Status' => 'B',
+                    'Client Name' => 'C',
+                    'User Name' => 'D',
+                    'Currency' => 'E',
+                    'Total Tonnage' => 'F',
+                    'Total Price' => 'G',
+                    'Total Base Price' => 'H',
+                    'Total Costs' => 'I',
+                    'Total Profit' => 'J',
+                    'Profit Percentage' => 'K',
+                    'Created Date' => 'L',
+                    'Items Count' => 'M'
+                ];
+            } else {
+                $columnIndeces = [
+                    'Offer Code' => 'A',
+                    'Status' => 'B',
+                    'Client Name' => 'C',
+                    'User Name' => 'D',
+                    'Currency' => 'E',
+                    'Total Tonnage' => 'F',
+                    'Total Price' => 'G',
+                    'Total Base Price' => 'H',
+                    'Total Costs' => 'I',
+                    'Created Date' => 'J',
+                    'Items Count' => 'K'
+                ];
+            }
+
+            // Define headers
+            $headers = [
+                $columnIndeces['Offer Code'] . '1' => 'Offer Code',
+                $columnIndeces['Status'] . '1' => 'Status',
+                $columnIndeces['Client Name'] . '1' => 'Client Name',
+                $columnIndeces['User Name'] . '1' => 'User Name',
+                $columnIndeces['Currency'] . '1' => 'Currency',
+                $columnIndeces['Total Tonnage'] . '1' => 'Total Tonnage',
+                $columnIndeces['Total Price'] . '1' => 'Total Price',
+                $columnIndeces['Total Base Price'] . '1' => 'Total Base Price',
+                $columnIndeces['Total Costs'] . '1' => 'Total Costs',
+                $columnIndeces['Created Date'] . '1' => 'Created Date',
+                $columnIndeces['Items Count'] . '1' => 'Items Count'
+            ];
+
+            if (Gate::check('view-offers-profit')) {
+                $headers[$columnIndeces['Total Profit'] . '1'] = 'Total Profit';
+                $headers[$columnIndeces['Profit Percentage'] . '1'] = 'Profit Percentage';
+            }
+
+            // Set headers
+            foreach ($headers as $cell => $header) {
+                $sheet->setCellValue($cell, $header);
+            }
+
+            // Style headers
+            $headerRange = $columnIndeces['Offer Code'] . '1:' . $columnIndeces['Items Count'] . '1';
+            $sheet->getStyle($headerRange)->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF'],
+                    'size' => 12
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '2563EB'] // Blue background
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
+            ]);
+
+            // Auto-size columns
+            foreach (range($columnIndeces['Offer Code'], $columnIndeces['Items Count']) as $column) {
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+            }
+
+            // Fill data
+            $row = 2;
+            foreach ($offers as $offer) {
+                $sheet->setCellValue($columnIndeces['Offer Code'] . $row, $offer->code);
+                $sheet->setCellValue($columnIndeces['Status'] . $row, $offer->status);
+                $sheet->setCellValue($columnIndeces['Client Name'] . $row, $offer->client->name ?? 'N/A');
+                $sheet->setCellValue($columnIndeces['User Name'] . $row, $offer->user->name ?? 'N/A');
+                $sheet->setCellValue($columnIndeces['Currency'] . $row, $offer->currency->name ?? 'N/A');
+                $sheet->setCellValue($columnIndeces['Total Tonnage'] . $row, number_format($offer->total_tonnage, 2));
+                $sheet->setCellValue($columnIndeces['Total Price'] . $row, number_format($offer->total_price, 2));
+                $sheet->setCellValue($columnIndeces['Total Base Price'] . $row, number_format($offer->total_base_price, 2));
+                $sheet->setCellValue($columnIndeces['Total Costs'] . $row, number_format($offer->total_costs, 2));
+                if (Gate::check('view-offers-profit')) {
+                    $sheet->setCellValue($columnIndeces['Total Profit'] . $row, number_format($offer->total_profit, 2));
+                    $sheet->setCellValue($columnIndeces['Profit Percentage'] . $row, number_format($offer->profit_percentage, 2) . '%');
+                }
+                $sheet->setCellValue($columnIndeces['Created Date'] . $row, $offer->created_at->format('Y-m-d H:i:s'));
+                $sheet->setCellValue($columnIndeces['Items Count'] . $row, $offer->items->count());
+
+                // Style data rows with alternating colors
+                if ($row % 2 == 0) {
+                    $sheet->getStyle($columnIndeces['Offer Code'] . $row . ':' . $columnIndeces['Items Count'] . $row)->applyFromArray([
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => 'F8FAFC'] // Light gray
+                        ]
+                    ]);
+                }
+
+                // Add borders to data rows
+                $sheet->getStyle($columnIndeces['Offer Code'] . $row . ':' . $columnIndeces['Items Count'] . $row)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                            'color' => ['rgb' => 'E5E7EB']
+                        ]
+                    ]
+                ]);
+
+                $row++;
+            }
+
+            // Save to file
+            $writer = new Xlsx($spreadsheet);
+            $filePath = storage_path('app/' . $filename);
+            $writer->save($filePath);
+
+            AppLog::info('Offers exported to Excel', 'Offers exported to ' . $filename . ' with ' . $offers->count() . ' records');
+
+            return $filePath;
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Offers export failed', 'Excel export failed: ' . $e->getMessage());
+            throw new OfferManagementException('Offers export failed: ' . $e->getMessage());
+        }
+    }
+
+    private function checkOfferItemsArray(&$offerItems)
     {
         $requiredFields = OfferItem::REQUIRED_FIELDS;
         $i = 0;
-        foreach ($offerItems as $item) {
+        foreach ($offerItems as &$item) {
             foreach ($requiredFields as $field) {
                 if (!isset($item[$field])) {
                     throw new OfferManagementException("Field $field is required in offer item#$i ");
+                }
+            }
+            foreach ($item as $key => $value) {
+                if (!in_array($key, $requiredFields)) {
+                    unset($item[$key]);
                 }
             }
             $i++;
@@ -272,9 +463,11 @@ class OfferServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('view-offers-list', [OfferPolicy::class, 'viewAny']);
+        Gate::define('view-offers-profit', [OfferPolicy::class, 'viewProfit']);
         Gate::define('view-offer', [OfferPolicy::class, 'view']);
         Gate::define('create-offers', [OfferPolicy::class, 'create']);
         Gate::define('update-offer', [OfferPolicy::class, 'update']);
         Gate::define('delete-offer', [OfferPolicy::class, 'delete']);
+        Gate::define('can-export-offers', [OfferPolicy::class, 'canExport']);
     }
 }

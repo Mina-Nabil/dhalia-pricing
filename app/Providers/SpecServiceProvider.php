@@ -13,14 +13,18 @@ use Illuminate\Support\ServiceProvider;
 class SpecServiceProvider extends ServiceProvider
 {
 
-    public function getSpecs($search = null, $paginate = 10)
+    public function getSpecs($search = null, $paginate = 10, $forDropdown = false)
     {
-        Gate::authorize('view-spec-list');
+        if (!$forDropdown) {
+            Gate::authorize('view-spec-list');
+        }
         $query = Spec::query();
         if ($search) {
             $query->bySearch($search);
         }
-        AppLog::info('Specs list viewed', 'Specs loaded');
+        if (!$forDropdown) {
+            AppLog::info('Specs list viewed', 'Specs loaded');
+        }
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 

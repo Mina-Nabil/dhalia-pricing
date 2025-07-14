@@ -9,6 +9,7 @@ use App\Providers\OfferServiceProvider;
 use App\Providers\CurrencyServiceProvider;
 use App\Providers\ProductServiceProvider;
 use App\Providers\PackingServiceProvider;
+use App\Providers\SpecServiceProvider;
 use App\Traits\AlertFrontEnd;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -32,11 +33,15 @@ class OfferCreate extends Component
     /** @var PackingServiceProvider */
     protected $packingService;
 
+    /** @var SpecServiceProvider */
+    protected $specService;
+
     // Main offer fields
     public $status = 'draft';
     public $client_id = '';
     public $currency_id = '';
     public $currency_rate = 1;
+    public $original_duplicate_of_id = null;
     public $duplicate_of_id = null;
     public $duplicate_of_code = null;
 
@@ -49,6 +54,8 @@ class OfferCreate extends Component
     public $packings = [];
     public $statuses = [];
     public $calcTypes = [];
+    public $categories = [];
+    public $specs = [];
 
     protected $listeners = ['clientsSelected'];
 
@@ -58,6 +65,7 @@ class OfferCreate extends Component
         $this->currencyService = app(CurrencyServiceProvider::class);
         $this->productService = app(ProductServiceProvider::class);
         $this->packingService = app(PackingServiceProvider::class);
+        $this->specService = app(SpecServiceProvider::class);
     }
 
     public function clientsSelected($clientIds)
@@ -67,6 +75,26 @@ class OfferCreate extends Component
         } else {
             $this->client_id = $clientIds;
         }
+        if ($this->client_id && $this->original_duplicate_of_id) {
+            $duplicate_offer = $this->offerService->getOffer($this->original_duplicate_of_id, false);
+            if ($duplicate_offer->client_id != $this->client_id) {
+                $this->resetDuplicateFields();
+            } else {
+                $this->setDuplicateFields($duplicate_offer);
+            }
+        }
+    }
+
+    protected function setDuplicateFields($duplicate_offer)
+    {
+        $this->duplicate_of_id = $duplicate_offer->id;
+        $this->duplicate_of_code = $duplicate_offer->code;
+    }
+
+    protected function resetDuplicateFields()
+    {
+        $this->duplicate_of_id = null;
+        $this->duplicate_of_code = null;
     }
 
     public function mount($duplicate_of_id = null)
@@ -74,8 +102,11 @@ class OfferCreate extends Component
         $this->authorize('create-offers');
         // Load dropdown data
         $this->currencies = $this->currencyService->getCurrencies(paginate: false, forDropdown: true);
-        $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
+        // $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
         $this->packings = $this->packingService->getPackings(paginate: false, forDropdown: true);
+        $this->categories = $this->productService->getCategories(paginate: false, forDropdown: true);
+        $this->specs = $this->specService->getSpecs(paginate: false, forDropdown: true);
+
         $this->statuses = Offer::STATUSES;
         $this->calcTypes = OfferItem::CALC_TYPES;
 
@@ -84,6 +115,7 @@ class OfferCreate extends Component
             while ($offer->duplicate_of_id) {
                 $offer = $this->offerService->getOffer($offer->duplicate_of_id, false);
             }
+            $this->original_duplicate_of_id = $offer->id;
             $this->duplicate_of_id = $offer->id;
             $this->duplicate_of_code = $offer->code;
             $this->loadFieldsFromOffer($offer);
@@ -112,6 +144,8 @@ class OfferCreate extends Component
         $newIndex = count($this->offerItems);
         $this->offerItems[] = [
             'product_id' => '',
+            'category_id' => '',
+            'spec_id' => '',
             'packing_id' => '',
             'quantity_in_tons' => 0,
             'internal_cost' => 0, // hidden, auto-calculated
@@ -142,6 +176,26 @@ class OfferCreate extends Component
         if (count($this->offerItems) > 1) {
             unset($this->offerItems[$index]);
             $this->offerItems = array_values($this->offerItems); // Reindex array
+        }
+    }
+
+    public function categoryIdSelected($index)
+    {
+        if ($this->offerItems[$index]['spec_id'] && $this->offerItems[$index]['category_id']) {
+            $this->offerItems[$index]['product_id'] = null;
+            $this->products = $this->productService->getProducts(paginate: false, forDropdown: true, categoryId: $this->offerItems[$index]['category_id'], specId: $this->offerItems[$index]['spec_id']);
+        } else {
+            $this->products = [];
+        }
+    }
+
+    public function specIdSelected($index)
+    {
+        if ($this->offerItems[$index]['category_id'] && $this->offerItems[$index]['spec_id']) {
+            $this->offerItems[$index]['product_id'] = null;
+            $this->products = $this->productService->getProducts(paginate: false, forDropdown: true, categoryId: $this->offerItems[$index]['category_id'], specId: $this->offerItems[$index]['spec_id']);
+        } else {
+            $this->products = [];
         }
     }
 
@@ -339,6 +393,8 @@ class OfferCreate extends Component
             return [
                 'internal_cost' => $item->internal_cost,
                 'product_id' => $item->product_id,
+                'category_id' => $item->product->product_category_id,
+                'spec_id' => $item->product->spec_id,
                 'packing_id' => $item->packing_id,
                 'quantity_in_tons' => $item->quantity_in_tons,
                 'kg_per_package' => $item->kg_per_package,
