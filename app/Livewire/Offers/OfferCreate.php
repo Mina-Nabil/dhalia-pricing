@@ -13,8 +13,7 @@ use App\Providers\SpecServiceProvider;
 use App\Traits\AlertFrontEnd;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Container\Attributes\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
 
 class OfferCreate extends Component
@@ -50,7 +49,8 @@ class OfferCreate extends Component
 
     // Available dropdown data
     public $currencies = [];
-    public $products = [];
+    /** @var Collection<Product> */
+    public $products;
     public $packings = [];
     public $statuses = [];
     public $calcTypes = [];
@@ -102,7 +102,7 @@ class OfferCreate extends Component
         $this->authorize('create-offers');
         // Load dropdown data
         $this->currencies = $this->currencyService->getCurrencies(paginate: false, forDropdown: true);
-        // $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
+        $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
         $this->packings = $this->packingService->getPackings(paginate: false, forDropdown: true);
         $this->categories = $this->productService->getCategories(paginate: false, forDropdown: true);
         $this->specs = $this->specService->getSpecs(paginate: false, forDropdown: true);
@@ -143,11 +143,14 @@ class OfferCreate extends Component
     {
         $newIndex = count($this->offerItems);
         $this->offerItems[] = [
+            'available_products' => [], // dynamic products array
             'product_id' => '',
             'category_id' => '',
             'spec_id' => '',
             'packing_id' => '',
             'quantity_in_kgs' => 0,
+            'raw_ton_cost' => 0,
+            'ingredients_cost' => 0,
             'internal_cost' => 0, // hidden, auto-calculated
             'kg_per_package' => 0,
             'one_package_cost' => 0,
@@ -183,9 +186,9 @@ class OfferCreate extends Component
     {
         if ($this->offerItems[$index]['spec_id'] && $this->offerItems[$index]['category_id']) {
             $this->offerItems[$index]['product_id'] = null;
-            $this->products = $this->productService->getProducts(paginate: false, forDropdown: true, categoryId: $this->offerItems[$index]['category_id'], specId: $this->offerItems[$index]['spec_id']);
+            $this->offerItems[$index]['available_products'] = $this->products->where('product_category_id', $this->offerItems[$index]['category_id'])->where('spec_id', $this->offerItems[$index]['spec_id']);
         } else {
-            $this->products = [];
+            $this->offerItems[$index]['available_products'] = [];
         }
     }
 
@@ -193,9 +196,9 @@ class OfferCreate extends Component
     {
         if ($this->offerItems[$index]['category_id'] && $this->offerItems[$index]['spec_id']) {
             $this->offerItems[$index]['product_id'] = null;
-            $this->products = $this->productService->getProducts(paginate: false, forDropdown: true, categoryId: $this->offerItems[$index]['category_id'], specId: $this->offerItems[$index]['spec_id']);
+            $this->offerItems[$index]['available_products'] = $this->products->where('product_category_id', $this->offerItems[$index]['category_id'])->where('spec_id', $this->offerItems[$index]['spec_id']);
         } else {
-            $this->products = [];
+            $this->offerItems[$index]['available_products'] = [];
         }
     }
 
@@ -217,6 +220,7 @@ class OfferCreate extends Component
     {
         $this->offerItems[$itemIndex]['ingredients'][] = [
             'name' => '',
+            'total_cost' => 0,
             'cost' => 0,
             'percentage' => 0,
         ];
@@ -261,6 +265,7 @@ class OfferCreate extends Component
                     'name' => $ingredient->name,
                     'cost' => $ingredient->cost,
                     'percentage' => (100 / $ingredientCount),
+                    'total_cost' => $ingredient->cost * (100 / $ingredientCount) / 100,
                 ];
             }
         }
@@ -269,7 +274,7 @@ class OfferCreate extends Component
     private function recalculateInternalCost($index)
     {
         if (isset($this->offerItems[$index]['product_id']) && $this->offerItems[$index]['product_id']) {
-            $product = collect($this->products)->firstWhere('id', $this->offerItems[$index]['product_id']);
+            $product = $this->products->firstWhere('id', $this->offerItems[$index]['product_id']);
             if ($product) {
                 $this->offerItems[$index]['internal_cost'] = $product->total_cost;
             }
@@ -284,11 +289,11 @@ class OfferCreate extends Component
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
-        $internalCurrencyCost = $item['internal_cost'] * $quantityInTons / $this->currency_rate;
+        $internalCurrencyCost = $item['internal_cost'] / $this->currency_rate;
 
         if ($kgPerPackage > 0 && $quantityInTons > 0) {
             $totalPackages = ($quantityInTons * 1000) / $kgPerPackage; // Convert tons to kg
-            $item['total_packing_cost'] = $totalPackages * $onePackageCost;
+            $item['total_packing_cost'] = ($totalPackages * $onePackageCost) / $quantityInTons;
         } else {
             $item['total_packing_cost'] = 0;
         }
@@ -296,10 +301,13 @@ class OfferCreate extends Component
         // Calculate sum of ingredients cost
         $ingredientsCost = 0;
         if (isset($item['ingredients']) && is_array($item['ingredients'])) {
-            foreach ($item['ingredients'] as $ingredient) {
-                $ingredientsCost += (($item['quantity_in_kgs'] / 1000) * (($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100));
+            foreach ($item['ingredients'] as &$ingredient) {
+                $ingredient['total_cost'] = ($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100;
+                $ingredientsCost += $ingredient['total_cost'];
             }
         }
+        $item['ingredients_cost'] = $ingredientsCost;
+        $item['raw_ton_cost'] = $ingredientsCost + $item['internal_cost'];
 
         // Calculate base_cost_currency
         $totalPackingCost = $item['total_packing_cost'] ?? 0;
@@ -351,7 +359,7 @@ class OfferCreate extends Component
         $item['total_profit'] = ($item['fob_price'] ?? 0) - ($item['total_costs'] ?? 0);
 
         // Set price (same as FOB price for offer item)
-        $item['price'] = $item['fob_price'] ?? 0;
+        $item['price'] = ($item['fob_price'] ?? 0) * $quantityInTons;
     }
 
     private function calculateCostByType(&$item, $costField, $typeField, $totalField, $quantityInTons, $fobPrice)
@@ -361,10 +369,10 @@ class OfferCreate extends Component
 
         switch ($type) {
             case OfferItem::CALC_TYPE_FIXED:
-                $item[$totalField] = $cost;
+                $item[$totalField] = $quantityInTons > 0 ? $cost / $quantityInTons : 0;
                 break;
             case OfferItem::CALC_TYPE_PER_TON:
-                $item[$totalField] = $cost * $quantityInTons;
+                $item[$totalField] = $cost;
                 break;
             case OfferItem::CALC_TYPE_PERCENTAGE:
                 $item[$totalField] = ($cost / 100) * $fobPrice;
@@ -402,10 +410,11 @@ class OfferCreate extends Component
         $this->currency_rate = $offer->currency_rate;
         $this->offerItems = $offer->items->map(function ($item) {
             return [
+                'available_products' => $this->products->where('product_category_id', $item->product->product_category_id)->where('spec_id', $item->product->spec_id),
                 'internal_cost' => $item->internal_cost,
-                'product_id' => $item->product_id,
                 'category_id' => $item->product->product_category_id,
                 'spec_id' => $item->product->spec_id,
+                'product_id' => $item->product_id,
                 'packing_id' => $item->packing_id,
                 'quantity_in_kgs' => $item->quantity_in_kgs,
                 'kg_per_package' => $item->kg_per_package,
@@ -428,6 +437,7 @@ class OfferCreate extends Component
                         'name' => $ingredient->name,
                         'cost' => $ingredient->cost,
                         'percentage' => $ingredient->percentage,
+                        'total_cost' => $ingredient->percentage / 100 * $ingredient->cost,
                     ];
                 })->toArray(),
             ];

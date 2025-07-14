@@ -101,24 +101,25 @@
                             id="offerItems.{{ $index }}.product_id" class="form-control mb-3" :label="__('Product')"
                             errorMessage="{{ $errors->first('offerItems.' . $index . '.product_id') }}">
                             <option value="">Select Product</option>
-                            @foreach ($products as $product)
+                            @foreach ($offerItems[$index]['available_products'] as $product)
                                 <option value="{{ $product->id }}">({{ $product->category->name }} -
                                     {{ $product->spec->name }}) - {{ $product->name }} </option>
                             @endforeach
                         </x-select>
 
-                        {{-- Internal Cost --}}
-                        <x-text-input wire:model="offerItems.{{ $index }}.internal_cost"
-                            id="offerItems.{{ $index }}.internal_cost" type="number" step="0.001"
-                            min="0" class="form-control mb-3" :label="__('Internal Cost per Ton')" readonly />
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            {{-- Internal Cost --}}
+                            <x-text-input wire:model="offerItems.{{ $index }}.internal_cost"
+                                id="offerItems.{{ $index }}.internal_cost" type="number" step="0.001"
+                                min="0" class="form-control mb-3" :label="__('Internal Cost per Ton')" readonly />
 
-                        {{-- Quantity in Tons --}}
-                        <x-text-input wire:model="offerItems.{{ $index }}.quantity_in_kgs"
-                            wire:change="recalculate({{ $index }})"
-                            id="offerItems.{{ $index }}.quantity_in_kgs" type="number" step="0.001"
-                            min="0" class="form-control" :label="__('Quantity (KGs)')"
-                            errorMessage="{{ $errors->first('offerItems.' . $index . '.quantity_in_kgs') }}" />
-
+                            {{-- Quantity in Tons --}}
+                            <x-text-input wire:model="offerItems.{{ $index }}.quantity_in_kgs"
+                                wire:change="recalculate({{ $index }})"
+                                id="offerItems.{{ $index }}.quantity_in_kgs" type="number" step="0.001"
+                                min="0" class="form-control" :label="__('Quantity (KGs)')"
+                                errorMessage="{{ $errors->first('offerItems.' . $index . '.quantity_in_kgs') }}" />
+                        </div>
                         {{-- Ingredients --}}
                         <div class="mt-2">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -132,11 +133,22 @@
                             @if (isset($item['ingredients']) && count($item['ingredients']) > 0)
                                 @foreach ($item['ingredients'] as $ingredientIndex => $ingredient)
                                     <div class="grid grid-cols-1 gap-2 border border-gray-200 rounded-lg p-2 mb-2">
-                                        <x-text-input
-                                            wire:model="offerItems.{{ $index }}.ingredients.{{ $ingredientIndex }}.name"
-                                            wire:change="recalculate({{ $index }})" placeholder="Name"
-                                            class="form-control form-control-sm w-full"
-                                            errorMessage="{{ $errors->first('offerItems.' . $index . '.ingredients.' . $ingredientIndex . '.name') }}" />
+                                        <div class="flex gap-2 mb-2">
+                                            <div class="flex-1">
+                                                <x-text-input
+                                                    wire:model="offerItems.{{ $index }}.ingredients.{{ $ingredientIndex }}.name"
+                                                    wire:change="recalculate({{ $index }})" placeholder="Name"
+                                                    class="form-control form-control-sm w-full"
+                                                    errorMessage="{{ $errors->first('offerItems.' . $index . '.ingredients.' . $ingredientIndex . '.name') }}" />
+                                            </div>
+                                            <div class="flex-1">
+                                                <x-text-input
+                                                    wire:model="offerItems.{{ $index }}.ingredients.{{ $ingredientIndex }}.total_cost"
+                                                    wire:change="recalculate({{ $index }})"
+                                                    placeholder="Total Cost"
+                                                    class="form-control form-control-sm w-full" readonly />
+                                            </div>
+                                        </div>
                                         <div class="flex gap-2 mb-2">
                                             <div class="flex-1">
                                                 <x-text-input
@@ -162,11 +174,36 @@
                                                 </button>
                                             </div>
                                         </div>
+
                                     </div>
                                 @endforeach
                             @else
                                 <small class="text-muted">No ingredients</small>
                             @endif
+                        </div>
+                        <div class="border-t pt-2 mt-2">
+                            <strong class="text-gray-600 mb-2">Raw costs per Ton</strong>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Internal Cost:</small>
+                                    <strong
+                                        class="text-red-600">{{ number_format($item['internal_cost'] ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Ingredients Cost:</small>
+                                    <strong
+                                        class="text-red-600">{{ number_format($item['ingredients_cost'] ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Total Costs:</small>
+                                    <strong
+                                        class="text-red-600">{{ number_format($item['raw_ton_cost'] ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -203,13 +240,13 @@
                                 errorMessage="{{ $errors->first('offerItems.' . $index . '.one_package_cost') }}" />
                         </div>
 
-                        <x-text-input :label="__('Total Packing Cost')"
+                        <x-text-input :label="__('Ton Packing Cost')"
                             value="{{ number_format($item['total_packing_cost'] ?? 0, 2) }}" readonly
                             class="form-control bg-light mb-3" />
 
                         {{-- Pricing --}}
 
-                        <x-text-input :label="__('Base Cost (Currency)')"
+                        <x-text-input :label="__('Ton Base Cost (Currency)')"
                             value="{{ number_format($item['base_cost_currency'] ?? 0, 2) }}" readonly
                             class="form-control bg-light mb-3" />
 
@@ -221,7 +258,7 @@
                             min="0" class="form-control" :label="__('Profit Margin (%)')"
                             errorMessage="{{ $errors->first('offerItems.' . $index . '.profit_margain') }}" />
 
-                        <x-text-input :label="__('FOB Price')" value="{{ number_format($item['fob_price'] ?? 0, 2) }}"
+                        <x-text-input :label="__('Ton FOB Price')" value="{{ number_format($item['fob_price'] ?? 0, 2) }}"
                             readonly class="form-control bg-light mb-3" />
                     </div>
                 </div>
@@ -329,25 +366,33 @@
 
                         {{-- Summary --}}
                         <div class="border-t pt-2">
-                            <small class="text-gray-600">Summary</small>
+                            <strong class="text-gray-600 mb-5">Summary</strong>
                             <div class="mb-2">
                                 <div class="flex justify-between">
-                                    <small>Total Costs:</small>
+                                    <small>Total Ton Costs:</small>
                                     <strong
                                         class="text-red-600">{{ number_format($item['total_costs'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                             <div class="mb-2">
                                 <div class="flex justify-between">
-                                    <small>Total Profit:</small>
+                                    <small>Tons:</small>
+                                    <strong
+                                        class="text-red-600">{{ number_format($item['quantity_in_kgs'] / 1000 ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Profit per Ton:</small>
                                     <strong
                                         class="text-green-600">{{ number_format($item['total_profit'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                             <div>
                                 <div class="flex justify-between">
-                                    <small>Final Price:</small>
-                                    <strong class="text-blue-600">{{ number_format($item['price'] ?? 0, 2) }}</strong>
+                                    <small>Total Price:</small>
+                                    <strong
+                                        class="text-blue-600">{{ number_format($item['price'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                         </div>
