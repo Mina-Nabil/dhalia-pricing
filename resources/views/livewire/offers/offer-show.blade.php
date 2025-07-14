@@ -27,8 +27,11 @@
                     @endcan
                     
                     @can('delete-offer', $offer)
-                        <button wire:click="deleteOffer" type="button" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Are you sure you want to delete this offer? This action cannot be undone.')">
+                        <button wire:click="$dispatch('showConfirmationModal', {
+                            title: 'Delete Offer',
+                            message: 'Are you sure you want to delete this offer? This action cannot be undone.',
+                            callback: 'deleteOffer'
+                        })" type="button" class="btn btn-danger btn-sm">
                             <i class="fa fa-trash"></i> <span class="hidden sm:inline">Delete</span>
                         </button>
                     @endcan

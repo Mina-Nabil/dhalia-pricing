@@ -181,7 +181,8 @@
                                                     <button wire:click="$dispatch('showConfirmationModal', {
                                                         title: 'Delete Product',
                                                         message: 'Are you sure you want to delete this product?',
-                                                        onConfirm: () => $dispatch('deleteProduct', {{ $product->id }})
+                                                        callback: 'deleteProduct',
+                                                        params: {{ $product->id }}
                                                     })"
                                                         class="action-btn text-danger">
                                                         <iconify-icon icon="heroicons:trash"></iconify-icon>
