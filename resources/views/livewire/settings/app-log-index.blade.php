@@ -10,7 +10,7 @@
             <div class="-mx-6 overflow-x-auto">
                 <div class="inline-block min-w-full align-middle">
                     <div class="overflow-hidden">
-                        <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 800px;">
+                        <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-700">
                             <thead class="bg-slate-200 dark:bg-slate-700">
                                 <tr>
 
