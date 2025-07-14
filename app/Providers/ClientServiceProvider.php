@@ -20,7 +20,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ClientServiceProvider extends ServiceProvider
 {
-    public function getClients($search = null, $paginate = 10)
+    public function getClients($search = null, $paginate = 10, $forSelection = false)
     {
         $returnAll = false;
         if (Gate::check('view-client-any')) {
@@ -32,7 +32,9 @@ class ClientServiceProvider extends ServiceProvider
                 $query->where('user_id', Auth::id());
             })->orWhere('created_by_id', Auth::id());
         })->search($search);
-        AppLog::info('Clients list viewed', 'Clients loaded');
+        if (!$forSelection) {
+            AppLog::info('Clients list viewed', 'Clients loaded');
+        }
 
         return $paginate ? $clients->paginate($paginate) : $clients->get();
     }
@@ -186,7 +188,7 @@ class ClientServiceProvider extends ServiceProvider
     public function exportClientsToExcel($search = null, $filename = 'clients_export.xlsx')
     {
         Gate::authorize('view-client-any');
-        
+
         try {
             // Get all clients with the same filters (no pagination)
             $clients = $this->getClients(
@@ -260,11 +262,11 @@ class ClientServiceProvider extends ServiceProvider
                 $sheet->setCellValue('E' . $row, $client->country_name ?: 'N/A');
                 $sheet->setCellValue('F' . $row, $client->notes ?: 'N/A');
                 $sheet->setCellValue('G' . $row, $client->createdBy->name ?? 'N/A');
-                
+
                 // Get associated users names
                 $associatedUsers = $client->users->pluck('name')->join(', ');
                 $sheet->setCellValue('H' . $row, $associatedUsers ?: 'None');
-                
+
                 $sheet->setCellValue('I' . $row, $client->infos->count());
                 $sheet->setCellValue('J' . $row, $client->created_at->format('Y-m-d H:i:s'));
 
@@ -299,7 +301,6 @@ class ClientServiceProvider extends ServiceProvider
             AppLog::info('Clients exported to Excel', 'Clients exported to ' . $filename . ' with ' . $clients->count() . ' records');
 
             return $filePath;
-
         } catch (Exception $e) {
             report($e);
             AppLog::error('Clients export failed', 'Excel export failed: ' . $e->getMessage());
@@ -310,20 +311,20 @@ class ClientServiceProvider extends ServiceProvider
     public function importClientsFromExcel($filePath)
     {
         Gate::authorize('create-client');
-        
+
         try {
             // Load spreadsheet
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
             $sheet = $spreadsheet->getActiveSheet();
-            
+
             // Get the highest row number
             $highestRow = $sheet->getHighestRow();
-            
+
             $importedCount = 0;
             $updatedCount = 0;
             $skippedCount = 0;
             $errors = [];
-            
+
             // Start from row 2 (skip header)
             for ($row = 2; $row <= $highestRow; $row++) {
                 try {
@@ -334,33 +335,33 @@ class ClientServiceProvider extends ServiceProvider
                     $address = trim($sheet->getCell('D' . $row)->getCalculatedValue() ?? '');
                     $countryName = trim($sheet->getCell('E' . $row)->getCalculatedValue() ?? '');
                     $notes = trim($sheet->getCell('F' . $row)->getCalculatedValue() ?? '');
-                    
+
                     // Skip empty rows
                     if (empty($clientName)) {
                         continue;
                     }
-                    
+
                     // Convert "N/A" values to null
                     $phone = ($phone === 'N/A') ? null : $phone;
                     $email = ($email === 'N/A') ? null : $email;
                     $address = ($address === 'N/A') ? null : $address;
                     $countryName = ($countryName === 'N/A') ? null : $countryName;
                     $notes = ($notes === 'N/A') ? null : $notes;
-                    
+
                     // Validate email format if provided
                     if ($email && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                         $errors[] = "Row {$row}: Invalid email format for '{$clientName}'";
                         $skippedCount++;
                         continue;
                     }
-                    
+
                     // Check if client exists (by name)
                     $existingClient = $this->getClientByName($clientName);
-                    
+
                     if ($existingClient) {
                         // Update existing client
                         Gate::authorize('update-client', $existingClient);
-                        
+
                         $this->updateClient(
                             $existingClient,
                             $clientName,
@@ -370,10 +371,9 @@ class ClientServiceProvider extends ServiceProvider
                             $notes,
                             $countryName
                         );
-                        
+
                         $updatedCount++;
                         AppLog::info('Client updated via import', "Client '{$clientName}' updated from Excel import", $existingClient);
-                        
                     } else {
                         // Create new client
                         $newClient = $this->createClient(
@@ -384,18 +384,17 @@ class ClientServiceProvider extends ServiceProvider
                             $notes,
                             $countryName
                         );
-                        
+
                         $importedCount++;
                         AppLog::info('Client created via import', "Client '{$clientName}' created from Excel import", $newClient);
                     }
-                    
                 } catch (Exception $e) {
                     $errors[] = "Row {$row}: " . $e->getMessage();
                     $skippedCount++;
                     continue;
                 }
             }
-            
+
             $totalProcessed = $importedCount + $updatedCount;
             $summary = [
                 'imported' => $importedCount,
@@ -404,13 +403,13 @@ class ClientServiceProvider extends ServiceProvider
                 'total_processed' => $totalProcessed,
                 'errors' => $errors
             ];
-            
-            AppLog::info('Clients import completed', 
+
+            AppLog::info(
+                'Clients import completed',
                 "Import completed: {$importedCount} new, {$updatedCount} updated, {$skippedCount} skipped"
             );
-            
+
             return $summary;
-            
         } catch (Exception $e) {
             report($e);
             AppLog::error('Clients import failed', 'Excel import failed: ' . $e->getMessage());
