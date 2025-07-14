@@ -116,7 +116,7 @@
                         {{-- Quantity in Tons --}}
                         <div class="mb-3">
                             <x-input-label :value="__('Quantity (Tons)')" />
-                            <p class="form-control-plaintext">{{ number_format($item->quantity_in_tons ?? 0, 3) }}</p>
+                            <p class="form-control-plaintext">{{ number_format($item->quantity_in_kgs ?? 0, 3) }}</p>
                         </div>
 
                         {{-- Ingredients --}}

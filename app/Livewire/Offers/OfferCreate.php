@@ -147,7 +147,7 @@ class OfferCreate extends Component
             'category_id' => '',
             'spec_id' => '',
             'packing_id' => '',
-            'quantity_in_tons' => 0,
+            'quantity_in_kgs' => 0,
             'internal_cost' => 0, // hidden, auto-calculated
             'kg_per_package' => 0,
             'one_package_cost' => 0,
@@ -269,7 +269,7 @@ class OfferCreate extends Component
     {
         $item = &$this->offerItems[$index];
         // Calculate total packing cost
-        $quantityInTons = isset($item['quantity_in_tons']) && is_numeric($item['quantity_in_tons']) ? $item['quantity_in_tons'] : 0;
+        $quantityInTons = isset($item['quantity_in_kgs']) && is_numeric($item['quantity_in_kgs']) ? ($item['quantity_in_kgs'] / 1000) : 0;
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
@@ -286,7 +286,7 @@ class OfferCreate extends Component
         $ingredientsCost = 0;
         if (isset($item['ingredients']) && is_array($item['ingredients'])) {
             foreach ($item['ingredients'] as $ingredient) {
-                $ingredientsCost += ($item['quantity_in_tons'] * (($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100));
+                $ingredientsCost += ($item['quantity_in_kgs'] * (($ingredient['cost'] ?? 0) * ($ingredient['percentage'] ?? 0) / 100));
             }
         }
 
@@ -396,7 +396,7 @@ class OfferCreate extends Component
                 'category_id' => $item->product->product_category_id,
                 'spec_id' => $item->product->spec_id,
                 'packing_id' => $item->packing_id,
-                'quantity_in_tons' => $item->quantity_in_tons,
+                'quantity_in_kgs' => $item->quantity_in_kgs,
                 'kg_per_package' => $item->kg_per_package,
                 'one_package_cost' => $item->one_package_cost,
                 'profit_margain' => $item->profit_margain,
@@ -439,8 +439,8 @@ class OfferCreate extends Component
             'offerItems.*.ingredients.*.percentage' => 'required|numeric|min:1|max:100',
             'offerItems.*.product_id' => 'required|exists:products,id',
             'offerItems.*.packing_id' => 'required|exists:packings,id',
-            'offerItems.*.quantity_in_tons' => 'required|numeric|min:0.001',
-            'offerItems.*.kg_per_package' => 'required|numeric|min:0.001',
+            'offerItems.*.quantity_in_kgs' => 'required|numeric|min:1',
+            'offerItems.*.kg_per_package' => 'required|numeric|min:1',
             'offerItems.*.one_package_cost' => 'required|numeric|min:0',
             'offerItems.*.profit_margain' => 'required|numeric|min:0',
             'offerItems.*.freight_cost' => 'required|numeric|min:0',
@@ -463,9 +463,9 @@ class OfferCreate extends Component
             'offerItems.*.product_id.exists' => 'Product not found',
             'offerItems.*.packing_id.required' => 'Required',
             'offerItems.*.packing_id.exists' => 'Packing not found',
-            'offerItems.*.quantity_in_tons.required' => 'Required',
-            'offerItems.*.quantity_in_tons.numeric' => 'Not a number',
-            'offerItems.*.quantity_in_tons.min' => 'Not greater than 0',
+            'offerItems.*.quantity_in_kgs.required' => 'Required',
+            'offerItems.*.quantity_in_kgs.numeric' => 'Not a number',
+            'offerItems.*.quantity_in_kgs.min' => 'Not greater than 0',
             'offerItems.*.kg_per_package.required' => 'Required',
             'offerItems.*.kg_per_package.numeric' => 'Not a number',
             'offerItems.*.kg_per_package.min' => 'Not greater than 0',
@@ -498,7 +498,7 @@ class OfferCreate extends Component
             'offerItems.*.ingredients.*.percentage.max' => 'Not less than 100',
         ]);
 
-        if (!$this->validateIngredientsTotalPercentage()) return;
+        // if (!$this->validateIngredientsTotalPercentage()) return;
 
         try {
             $offer = $this->offerService->createOffer(

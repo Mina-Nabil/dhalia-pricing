@@ -48,7 +48,7 @@ return new class extends Migration
             $table->foreignIdFor(Product::class)->constrained();
             $table->foreignIdFor(Packing::class)->constrained();
 
-            $table->decimal('quantity_in_tons', 10, 2); 
+            $table->decimal('quantity_in_kgs', 10, 2); 
             $table->decimal('internal_cost', 10, 2);
             
             $table->decimal('kg_per_package', 10, 2);

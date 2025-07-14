@@ -147,7 +147,7 @@ class OfferServiceProvider extends ServiceProvider
         $profitPercentage = 0;
 
         foreach ($offerItems as $item) {
-            $totalTonnage += $item['quantity_in_tons'];
+            $totalTonnage += ($item['quantity_in_kgs'] / 1000);
             $totalPrice += $item['price'];
             $totalBasePrice += $item['base_cost_currency'];
             $totalFreightCost += $item['freight_total_cost'];

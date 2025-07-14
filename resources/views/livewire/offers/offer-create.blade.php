@@ -113,11 +113,11 @@
                             min="0" class="form-control mb-3" :label="__('Internal Cost per Ton')" readonly />
 
                         {{-- Quantity in Tons --}}
-                        <x-text-input wire:model="offerItems.{{ $index }}.quantity_in_tons"
+                        <x-text-input wire:model="offerItems.{{ $index }}.quantity_in_kgs"
                             wire:change="recalculate({{ $index }})"
-                            id="offerItems.{{ $index }}.quantity_in_tons" type="number" step="0.001"
-                            min="0" class="form-control" :label="__('Quantity (Tons)')"
-                            errorMessage="{{ $errors->first('offerItems.' . $index . '.quantity_in_tons') }}" />
+                            id="offerItems.{{ $index }}.quantity_in_kgs" type="number" step="0.001"
+                            min="0" class="form-control" :label="__('Quantity (KGs)')"
+                            errorMessage="{{ $errors->first('offerItems.' . $index . '.quantity_in_kgs') }}" />
 
                         {{-- Ingredients --}}
                         <div class="mt-2">
@@ -368,7 +368,7 @@
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Tons Total</h5>
                     <h3 class="text-teal-600 text-2xl font-bold">
-                        {{ number_format(array_sum(array_column($offerItems, 'quantity_in_tons')), 2) }}</h3>
+                        {{ number_format(array_sum(array_column($offerItems, 'quantity_in_kgs')), 2) }}</h3>
                 </div>
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Costs Total</h5>

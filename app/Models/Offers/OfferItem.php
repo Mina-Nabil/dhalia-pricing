@@ -26,7 +26,7 @@ class OfferItem extends Model
         'offer_id',
         'product_id',
         'packing_id',
-        'quantity_in_tons',
+        'quantity_in_kgs',
         'internal_cost',
         'kg_per_package',
         'one_package_cost',
@@ -50,7 +50,7 @@ class OfferItem extends Model
     const REQUIRED_FIELDS = [
         'product_id',
         'packing_id',
-        'quantity_in_tons',
+        'quantity_in_kgs',
         'internal_cost',
         'kg_per_package',
         'one_package_cost',
