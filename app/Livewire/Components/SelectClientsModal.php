@@ -75,7 +75,7 @@ class SelectClientsModal extends Component
             $this->selectedClientIds = [];
         }
 
-        $clients = $this->clientService->getClients($this->search, paginate: false);
+        $clients = $this->clientService->getClients($this->search, paginate: false, forSelection: true);
         foreach ($clients as $client) {
             if (!in_array($client->id, $this->selectedClientIds)) {
                 $this->selectedClientIds[] = $client->id;
@@ -108,7 +108,7 @@ class SelectClientsModal extends Component
 
     public function render()
     {
-        $clients = $this->clientService->getClients($this->search, paginate: 10);
+        $clients = $this->clientService->getClients($this->search, paginate: 10, forSelection: true);
 
         return view('livewire.components.select-clients-modal', [
             'clients' => $clients,
