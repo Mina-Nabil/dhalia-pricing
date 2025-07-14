@@ -57,6 +57,7 @@ class OfferItem extends Model
         'total_packing_cost',
         'base_cost_currency',
         'profit_margain',
+        'price',
         'fob_price',
         'freight_cost',
         'freight_type',
