@@ -18,7 +18,14 @@ class ProductsIndex extends Component
 {
     use WithPagination, AlertFrontEnd, WithFileUploads;
 
+    /**
+     * @var ProductServiceProvider
+     */
     protected $productService;
+
+    /**
+     * @var SpecServiceProvider
+     */
     protected $specService;
 
     public $search = '';
@@ -384,8 +391,8 @@ class ProductsIndex extends Component
     {
         $categories = $this->productService->getCategories($this->search);
         $products = $this->productService->getProducts($this->search, 10);
-        $allCategories = $this->productService->getCategories();
-        $allSpecs = $this->specService->getSpecs();
+        $allCategories = $this->productService->getCategories(forDropdown: true);
+        $allSpecs = $this->specService->getSpecs(forDropdown: true);
 
 
         return view('livewire.products.products-index', [
