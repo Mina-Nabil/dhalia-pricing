@@ -45,6 +45,9 @@ class OfferItem extends Model
         'agent_commission_total_cost',
         'total_costs',
         'total_profit',
+        'ingredients_cost',
+        'raw_ton_cost',
+        'price' //total item price
     ];
 
     const REQUIRED_FIELDS = [
@@ -71,6 +74,9 @@ class OfferItem extends Model
         'total_costs',
         'total_profit',
         'ingredients',
+        'ingredients_cost',
+        'raw_ton_cost',
+        'price' //total item price
     ];
 
     public function offer(): BelongsTo

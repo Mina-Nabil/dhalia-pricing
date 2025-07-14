@@ -115,7 +115,7 @@
 
                         {{-- Quantity in Tons --}}
                         <div class="mb-3">
-                            <x-input-label :value="__('Quantity (Tons)')" />
+                            <x-input-label :value="__('Quantity (KGs)')" />
                             <p class="form-control-plaintext">{{ number_format($item->quantity_in_kgs ?? 0, 3) }}</p>
                         </div>
 
@@ -144,6 +144,29 @@
                             @else
                                 <p class="text-muted">No ingredients</p>
                             @endif
+                        </div>
+
+                        {{-- Raw costs per Ton section --}}
+                        <div class="border-t pt-2 mt-2">
+                            <strong class="text-gray-600 mb-2">Raw costs per Ton</strong>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Internal Cost:</small>
+                                    <strong class="text-red-600">{{ number_format($item->internal_cost ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Ingredients Cost:</small>
+                                    <strong class="text-red-600">{{ number_format($item->ingredients_cost ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Total Costs:</small>
+                                    <strong class="text-red-600">{{ number_format($item->raw_ton_cost ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,7 +201,7 @@
 
                         {{-- Pricing --}}
                         <div class="mb-3">
-                            <x-input-label value="Base Cost" />
+                            <x-input-label :value="__('Base Cost per Ton (Currency)')" />
                             <p class="form-control-plaintext">{{ number_format($item->base_cost_currency ?? 0, 2) }} {{ $offer->currency->code ?? 'N/A' }}</p>
                         </div>
 
@@ -188,7 +211,7 @@
                         </div>
 
                         <div>
-                            <x-input-label :value="__('FOB Price')" />
+                            <x-input-label :value="__('Ton FOB Price')" />
                             <p class="form-control-plaintext font-bold text-green-600">{{ number_format($item->fob_price ?? 0, 2) }} {{ $offer->currency->code ?? 'N/A' }}</p>
                         </div>
                     </div>
@@ -258,23 +281,29 @@
 
                         {{-- Summary --}}
                         <div class="border-t pt-2">
-                            <small class="text-gray-600 font-semibold">Summary</small>
+                            <strong class="text-gray-600 mb-5">Summary</strong>
                             <div class="mb-2">
                                 <div class="flex justify-between">
-                                    <small>Total Costs:</small>
-                                    <strong class="text-red-600">{{ number_format($item->total_costs ?? 0, 2) }} {{ $offer->currency->code ?? 'N/A' }}</strong>
+                                    <small>Total Ton Costs:</small>
+                                    <strong class="text-red-600">{{ number_format($item->total_costs ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                             <div class="mb-2">
                                 <div class="flex justify-between">
-                                    <small>Total Profit:</small>
-                                    <strong class="text-green-600">{{ number_format($item->total_profit ?? 0, 2) }} {{ $offer->currency->code ?? 'N/A' }}</strong>
+                                    <small>Tons:</small>
+                                    <strong class="text-red-600">{{ number_format($item->quantity_in_kgs / 1000 ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Profit per Ton:</small>
+                                    <strong class="text-green-600">{{ number_format($item->total_profit ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                             <div>
                                 <div class="flex justify-between">
-                                    <small>Final Price:</small>
-                                    <strong class="text-blue-600">{{ number_format($item->price ?? 0, 2) }} {{ $offer->currency->code ?? 'N/A' }}</strong>
+                                    <small>Total Price:</small>
+                                    <strong class="text-blue-600">{{ number_format($item->price ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -295,7 +324,7 @@
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Tons Total</h5>
                     <h3 class="text-teal-600 text-2xl font-bold">
-                        {{ number_format($offer->total_tonnage ?? 0, 2) }}
+                        {{ number_format($offer->items->sum('quantity_in_kgs'), 2) }}
                     </h3>
                 </div>
                 <div class="text-center">
