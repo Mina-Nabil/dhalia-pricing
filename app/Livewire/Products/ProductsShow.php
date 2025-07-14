@@ -32,6 +32,8 @@ class ProductsShow extends Component
     public $costName = '';
     public $costAmount = '';
     public $isPercentage = false;
+    public $isFixed = false;
+    public $costType = 'per_ton'; // 'per_ton', 'percentage', 'fixed'
 
     // Ingredient form properties
     public $ingredientName = '';
@@ -116,11 +118,15 @@ class ProductsShow extends Component
         $this->validate([
             'costName' => 'required|string|max:255',
             'costAmount' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
-            'isPercentage' => 'boolean',
+            'costType' => 'required|in:per_ton,percentage,fixed',
         ]);
 
+        // Set boolean values based on cost type
+        $this->isPercentage = ($this->costType === 'percentage');
+        $this->isFixed = ($this->costType === 'fixed');
+
         try {
-            $this->productService->addProductCost($this->product, $this->costName, $this->costAmount, $this->isPercentage);
+            $this->productService->addProductCost($this->product, $this->costName, $this->costAmount, $this->isPercentage, $this->isFixed);
 
             // Refresh the product data
             $this->product = $this->productService->getProduct($this->product->id);
@@ -284,6 +290,8 @@ class ProductsShow extends Component
         $this->costName = '';
         $this->costAmount = '';
         $this->isPercentage = false;
+        $this->isFixed = false;
+        $this->costType = 'per_ton';
     }
 
     private function resetIngredientFormFields()

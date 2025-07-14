@@ -8,7 +8,7 @@ class ProductCost extends Model
 {
     const MORPH_TYPE = 'product_cost';
 
-    protected $fillable = ['product_id', 'name', 'cost', 'is_percentage', 'sort_order'];
+    protected $fillable = ['product_id', 'name', 'cost', 'is_percentage', 'sort_order', 'is_fixed'];
 
     //always sort by sort_order
     public static function boot()

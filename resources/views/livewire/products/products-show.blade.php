@@ -100,8 +100,10 @@
                                         <span class="text-slate-900 dark:text-white font-medium">
                                             @if ($cost->is_percentage)
                                                 {{ $cost->cost }}%
+                                            @elseif ($cost->is_fixed)
+                                                {{ number_format($cost->cost, 2) }}EGP (Fixed)
                                             @else
-                                                {{ number_format($cost->cost, 2) }}EGP
+                                                {{ number_format($cost->cost, 2) }}EGP/ton
                                             @endif
                                         </span>
                                     </div>
@@ -152,12 +154,33 @@
                                         step="0.01" errorMessage="{{ $errors->first('costAmount') }}"
                                         placeholder="100.00" />
 
-                                    <div class="flex items-center space-x-2">
-                                        <input type="checkbox" wire:model="isPercentage" id="isPercentage"
-                                            class="form-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                                        <label for="isPercentage" class="text-sm text-slate-600 dark:text-slate-400">
-                                            Is this a percentage?
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                            Cost Type:
                                         </label>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center space-x-2">
+                                                <input type="radio" wire:model="costType" value="per_ton" id="per_ton"
+                                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                                <label for="per_ton" class="text-sm text-slate-600 dark:text-slate-400">
+                                                    Per Ton
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input type="radio" wire:model="costType" value="percentage" id="percentage"
+                                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                                <label for="percentage" class="text-sm text-slate-600 dark:text-slate-400">
+                                                    Percentage
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input type="radio" wire:model="costType" value="fixed" id="fixed"
+                                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                                <label for="fixed" class="text-sm text-slate-600 dark:text-slate-400">
+                                                    Fixed Cost
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 

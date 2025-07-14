@@ -11,13 +11,32 @@ class Product extends Model
 
     protected $fillable = ['name', 'product_category_id', 'base_cost', 'spec_id'];
 
+    //function
+    public function calculateActualCost($tons)
+    {
+        $costs = $this->costs()->get();
+        $totalCost = $this->base_cost;
+        foreach ($costs as $cost) {
+            if ($cost->is_fixed) {
+                $totalCost += ($tons > 0) ? $cost->cost / $tons : 0;
+            } else if ($cost->is_percentage) {
+                $totalCost += ($tons * $cost->cost / 100);
+            } else {
+                $totalCost += $cost->cost;
+            }
+        }
+        return $totalCost;
+    }
+
     //attributes 
     public function getTotalCostAttribute()
     {
         $costs = $this->costs()->get();
         $totalCost = $this->base_cost;
         foreach ($costs as $cost) {
-            if ($cost->is_percentage) {
+            if ($cost->is_fixed) {
+                continue;
+            } else if ($cost->is_percentage) {
                 $totalCost += ($totalCost * $cost->cost / 100);
             } else {
                 $totalCost += $cost->cost;

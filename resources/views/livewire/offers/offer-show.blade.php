@@ -345,7 +345,7 @@
             </div>
 
             {{-- Additional Summary Information --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t">
+            <div class="grid grid-cols-3 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t">
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Total Profit</h5>
                     <h4 class="text-green-600 text-xl font-bold">{{ number_format($offer->total_profit ?? 0, 2) }}</h4>

@@ -175,9 +175,12 @@ class ProductServiceProvider extends ServiceProvider
         }
     }
 
-    public function addProductCost(Product $product, $name, $cost, $isPercentage)
+    public function addProductCost(Product $product, $name, $cost, $isPercentage, $isFixed)
     {
         Gate::authorize('update-product', $product);
+        if($isFixed && $isPercentage) {
+            throw new ProductManagementException('Product cost cannot be both fixed and percentage');
+        }
         try {
             $highestCost = $product->costs()->withoutGlobalScope('sort_by_order')->orderByDesc('sort_order')->first();
             $sortOrder = $highestCost ? $highestCost->sort_order + 1 : 0;
@@ -185,7 +188,8 @@ class ProductServiceProvider extends ServiceProvider
                 'name' => $name,
                 'cost' => $cost,
                 'is_percentage' => $isPercentage,
-                'sort_order' => $sortOrder
+                'sort_order' => $sortOrder,
+                'is_fixed' => $isFixed
             ]);
             AppLog::info('Product cost created', 'Product cost ' . $name . ' created', $product);
         } catch (Exception $e) {
@@ -518,6 +522,8 @@ class ProductServiceProvider extends ServiceProvider
                 $costValue = $cost->cost;
                 if ($cost->is_percentage) {
                     $costValue .= '%';
+                } elseif ($cost->is_fixed) {
+                    $costValue .= ' (F)';
                 }
                 $sheet->setCellValue($column . $row, $costValue);
             }
@@ -712,6 +718,7 @@ class ProductServiceProvider extends ServiceProvider
                 $costValue = $sheet->getCell($col . $row)->getValue();
                 if (!empty($costValue)) {
                     $isPercentage = false;
+                    $isFixed = false;
                     $cleanValue = $costValue;
                     
                     // Check if it's a percentage
@@ -719,11 +726,17 @@ class ProductServiceProvider extends ServiceProvider
                         $isPercentage = true;
                         $cleanValue = str_replace('%', '', $costValue);
                     }
+                    // Check if it's a fixed cost
+                    elseif (is_string($costValue) && strpos($costValue, ' (F)') !== false) {
+                        $isFixed = true;
+                        $cleanValue = str_replace(' (F)', '', $costValue);
+                    }
                     
                     $product->costs()->create([
                         'name' => $costName,
                         'cost' => floatval($cleanValue),
                         'is_percentage' => $isPercentage,
+                        'is_fixed' => $isFixed,
                         'sort_order' => $sortOrder++
                     ]);
                 }

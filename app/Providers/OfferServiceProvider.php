@@ -159,7 +159,7 @@ class OfferServiceProvider extends ServiceProvider
             $totalProfit += $item['total_profit'];
         }
 
-        $profitPercentage = ($totalProfit / $totalPrice) * 100;
+        $profitPercentage = ($totalProfit / $totalCosts) * 100;
 
         $offer = new Offer([
             'user_id' => Auth::id(),
@@ -185,9 +185,9 @@ class OfferServiceProvider extends ServiceProvider
             DB::transaction(function () use ($offer, $offerItems) {
                 $offer->save();
                 $offer->items()->createMany($offerItems);
-                foreach ($offer->items as $item) {
-                    if (isset($item['ingredients']) && is_array($item['ingredients']) && count($item['ingredients']) > 0) {
-                        $item->ingredients()->createMany($item['ingredients']);
+                foreach ($offer->items as $key => $item) {
+                    if (isset($offerItems[$key]['ingredients']) && count($offerItems[$key]['ingredients']) > 0) {
+                        $item->ingredients()->createMany($offerItems[$key]['ingredients']);
                     }
                 }
                 $offer->refresh();

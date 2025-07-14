@@ -210,7 +210,6 @@ class OfferCreate extends Component
 
                 // Load product ingredients if any
                 $this->loadProductIngredients($index, $product);
-                $this->recalculateInternalCost($index);
                 $this->recalculateOfferItem($index);
             }
         }
@@ -276,7 +275,7 @@ class OfferCreate extends Component
         if (isset($this->offerItems[$index]['product_id']) && $this->offerItems[$index]['product_id']) {
             $product = $this->products->firstWhere('id', $this->offerItems[$index]['product_id']);
             if ($product) {
-                $this->offerItems[$index]['internal_cost'] = $product->total_cost;
+                $this->offerItems[$index]['internal_cost'] = $product->calculateActualCost($this->offerItems[$index]['quantity_in_kgs'] / 1000);
             }
         }
     }
@@ -288,6 +287,9 @@ class OfferCreate extends Component
         $quantityInTons = isset($item['quantity_in_kgs']) && is_numeric($item['quantity_in_kgs']) ? ($item['quantity_in_kgs'] / 1000) : 0;
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
+
+        $this->recalculateInternalCost($index);
+
 
         $internalCurrencyCost = $item['internal_cost'] / $this->currency_rate;
 
