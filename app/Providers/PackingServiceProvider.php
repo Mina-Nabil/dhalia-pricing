@@ -25,11 +25,13 @@ class PackingServiceProvider extends ServiceProvider
         return $paginate ? $query->paginate($paginate) : $query->get();
     }
 
-    public function getPacking($id)
+    public function getPacking($id, $authorize = true)
     {
         $packing = Packing::findOrFail($id);
-        Gate::authorize('view-packing', $packing);
-        AppLog::info('Packing viewed', 'Packing ' . $id . ' viewed', $packing);
+        if ($authorize) {
+            Gate::authorize('view-packing', $packing);
+            AppLog::info('Packing viewed', 'Packing ' . $id . ' viewed', $packing);
+        }
         return $packing;
     }
 

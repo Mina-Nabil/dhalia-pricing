@@ -239,6 +239,17 @@ class OfferCreate extends Component
         }
     }
 
+    public function packingChanged($itemIndex)
+    {
+        $packing = $this->packingService->getPacking($this->offerItems[$itemIndex]['packing_id'], false);
+        if ($packing) {
+            $this->offerItems[$itemIndex]['one_package_cost'] = $packing->cost;
+        } else {
+            $this->offerItems[$itemIndex]['one_package_cost'] = 0;
+        }
+        $this->recalculateOfferItem($itemIndex);
+    }
+
     private function loadProductIngredients($itemIndex, $product)
     {
         $this->offerItems[$itemIndex]['ingredients'] = [];

@@ -178,7 +178,7 @@
 
                         {{-- Packing Info --}}
                         <x-select wire:model="offerItems.{{ $index }}.packing_id"
-                            wire:change="recalculate({{ $index }})"
+                            wire:change="packingChanged({{ $index }})"
                             id="offerItems.{{ $index }}.packing_id" class="form-control mb-3"
                             :label="__('Packing Type')"
                             errorMessage="{{ $errors->first('offerItems.' . $index . '.packing_id') }}">
