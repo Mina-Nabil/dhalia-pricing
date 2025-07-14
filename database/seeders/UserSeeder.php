@@ -21,5 +21,12 @@ class UserSeeder extends Seeder
             'is_active' => true,
             'password' => Hash::make('dev@smart'),
         ]);
+        User::create([
+            'name' => 'magdy',
+            'username' => 'Magdy El Wahsh',
+            'role' => User::ROLE_ADMIN,
+            'is_active' => true,
+            'password' => Hash::make('magdy@dhalia'),
+        ]);
     }
 }
