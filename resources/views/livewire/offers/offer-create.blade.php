@@ -185,13 +185,15 @@
                         </div>
                         <div class="border-t pt-2 mt-2">
                             <strong class="text-gray-600 mb-2">Raw costs per Ton</strong>
-                            <div class="mb-2">
-                                <div class="flex justify-between">
-                                    <small>Internal Cost:</small>
-                                    <strong
-                                        class="text-red-600">{{ number_format($item['internal_cost'] ?? 0, 2) }}</strong>
+                            @can('view-product-costs')
+                                <div class="mb-2">
+                                    <div class="flex justify-between">
+                                        <small>Internal Cost:</small>
+                                        <strong
+                                            class="text-red-600">{{ number_format($item['internal_cost'] ?? 0, 2) }}</strong>
+                                    </div>
                                 </div>
-                            </div>
+                            @endcan
                             <div class="mb-2">
                                 <div class="flex justify-between">
                                     <small>Ingredients Cost:</small>
@@ -199,13 +201,15 @@
                                         class="text-red-600">{{ number_format($item['ingredients_cost'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
-                            <div class="mb-2">
-                                <div class="flex justify-between">
-                                    <small>Total Costs:</small>
-                                    <strong
-                                        class="text-red-600">{{ number_format($item['raw_ton_cost'] ?? 0, 2) }}</strong>
+                            @can('view-product-costs')
+                                <div class="mb-2">
+                                    <div class="flex justify-between">
+                                        <small>Total Costs:</small>
+                                        <strong
+                                            class="text-red-600">{{ number_format($item['raw_ton_cost'] ?? 0, 2) }}</strong>
+                                    </div>
                                 </div>
-                            </div>
+                            @endcan
                         </div>
                     </div>
                 </div>
