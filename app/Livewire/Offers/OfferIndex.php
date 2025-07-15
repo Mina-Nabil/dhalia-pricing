@@ -50,12 +50,7 @@ class OfferIndex extends Component
     {
         $this->offerService = app(OfferServiceProvider::class);
     }
-
-    public function mount()
-    {
-        $this->authorize('viewAny', Offer::class);
-    }
-
+    
     public function updatingSearch()
     {
         $this->resetPage();
