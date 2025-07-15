@@ -67,7 +67,7 @@
                     </button>
                 @endif
                 @cannot('view-product-costs')
-                    <button wire:click="recalculateOfferItem({{ $index }}, true)" type="button"
+                    <button wire:click="forceRecalculateOfferItem({{ $index }})" type="button"
                         class="btn btn-primary btn-sm">
                         <i class="fa fa-calculator"></i> Calculate Price
                     </button>

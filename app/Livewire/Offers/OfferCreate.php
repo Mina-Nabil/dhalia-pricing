@@ -243,6 +243,11 @@ class OfferCreate extends Component
         }
     }
 
+    public function forceRecalculateOfferItem($index)
+    {
+        $this->recalculateOfferItem($index, true);
+    }
+
     public function packingChanged($itemIndex)
     {
         $packing = $this->packingService->getPacking($this->offerItems[$itemIndex]['packing_id'], false);
