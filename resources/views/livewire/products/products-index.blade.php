@@ -156,7 +156,9 @@
                                         <th scope="col" class="table-th whitespace-nowrap">Name</th>
                                         <th scope="col" class="table-th whitespace-nowrap">Category</th>
                                         <th scope="col" class="table-th whitespace-nowrap">Spec</th>
-                                        <th scope="col" class="table-th whitespace-nowrap">Base Cost</th>
+                                        @can('view-product-costs')
+                                            <th scope="col" class="table-th whitespace-nowrap">Base Cost</th>
+                                        @endcan
                                         <th scope="col" class="table-th whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
@@ -167,7 +169,9 @@
                                             <td class="table-td whitespace-nowrap hover:cursor-pointer hover:underline" wire:click="goToProductShow({{ $product->id }})">{{ $product->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ $product->category->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ $product->spec->name }}</td>
-                                            <td class="table-td whitespace-nowrap">{{ number_format($product->base_cost, 2) }}</td>
+                                            @can('view-product-costs')
+                                                <td class="table-td whitespace-nowrap">{{ number_format($product->base_cost, 2) }}</td>
+                                            @endcan
                                             <td class="table-td whitespace-nowrap">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
                                                     <button wire:click="goToProductShow({{ $product->id }})"
