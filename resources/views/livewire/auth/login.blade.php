@@ -19,7 +19,7 @@
                         </div>
                     </div>
                     <!-- BEGIN: Login Form -->
-                    <form class="space-y-4" wire:submit="checkUser">
+                    <form class="space-y-4">
                         @csrf
                         <div class="formGroup">
                             <!-- Typo corrected from "fromGroup" to "formGroup" -->
