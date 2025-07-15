@@ -14,6 +14,7 @@ use App\Traits\AlertFrontEnd;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class OfferCreate extends Component
@@ -60,77 +61,10 @@ class OfferCreate extends Component
     protected $listeners = ['clientsSelected'];
 
     protected $rules = [
-        'client_id' => 'required|exists:clients,id',
-        'currency_id' => 'required|exists:currencies,id',
-        'currency_rate' => 'required|numeric|min:0',
-        'status' => 'required|in:' . implode(',', Offer::STATUSES),
-        'offerItems' => 'required|array|min:1',
-        'offerItems.*.ingredients' => 'present|array',
-        'offerItems.*.ingredients.*.name' => 'required|string|max:255',
-        'offerItems.*.ingredients.*.cost' => 'required|numeric|min:0',
-        'offerItems.*.ingredients.*.percentage' => 'required|numeric|min:1|max:100',
         'offerItems.*.product_id' => 'required|exists:products,id',
-        'offerItems.*.packing_id' => 'required|exists:packings,id',
-        'offerItems.*.quantity_in_kgs' => 'required|numeric|min:1',
-        'offerItems.*.kg_per_package' => 'required|numeric|min:1',
-        'offerItems.*.one_package_cost' => 'required|numeric|min:0',
+        'offerItems.*.quantity_in_kgs' => 'required|numeric|min:0',
         'offerItems.*.profit_margain' => 'required|numeric|min:0',
-        'offerItems.*.freight_cost' => 'required|numeric|min:0',
-        'offerItems.*.freight_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
-        'offerItems.*.sterilization_cost' => 'required|numeric|min:0',
-        'offerItems.*.sterilization_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
-        'offerItems.*.agent_commission_cost' => 'required|numeric|min:0',
-        'offerItems.*.agent_commission_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
-    ];
-
-    protected $messages = [
-        'client_id.required' => 'Please select a client',
-        'client_id.exists' => 'Client not found',
-        'currency_id.required' => 'Required',
-        'currency_id.exists' => 'Currency not found',
-        'currency_rate.required' => 'Required',
-        'currency_rate.numeric' => 'Not a number',
-        'currency_rate.min' => 'Not greater than 0',
-        'status.required' => 'Required',
-        'status.in' => 'Invalid status',
-        'offerItems.*.product_id.required' => 'Required',
-        'offerItems.*.product_id.exists' => 'Product not found',
-        'offerItems.*.packing_id.required' => 'Required',
-        'offerItems.*.packing_id.exists' => 'Packing not found',
-        'offerItems.*.quantity_in_kgs.required' => 'Required',
-        'offerItems.*.quantity_in_kgs.numeric' => 'Not a number',
-        'offerItems.*.quantity_in_kgs.min' => 'Not greater than 0',
-        'offerItems.*.kg_per_package.required' => 'Required',
-        'offerItems.*.kg_per_package.numeric' => 'Not a number',
-        'offerItems.*.kg_per_package.min' => 'Not greater than 0',
-        'offerItems.*.one_package_cost.required' => 'Required',
-        'offerItems.*.one_package_cost.numeric' => 'Not a number',
-        'offerItems.*.one_package_cost.min' => 'Not greater than 0',
-        'offerItems.*.profit_margain.required' => 'Required',
-        'offerItems.*.profit_margain.numeric' => 'Not a number',
-        'offerItems.*.freight_cost.required' => 'Required',
-        'offerItems.*.freight_cost.numeric' => 'Not a number',
-        'offerItems.*.freight_type.required' => 'Required',
-        'offerItems.*.freight_type.in' => 'Invalid freight type',
-        'offerItems.*.sterilization_cost.required' => 'Required',
-        'offerItems.*.sterilization_cost.numeric' => 'Not a number',
-        'offerItems.*.sterilization_type.required' => 'Required',
-        'offerItems.*.sterilization_type.in' => 'Invalid sterilization type',
-        'offerItems.*.agent_commission_cost.required' => 'Required',
-        'offerItems.*.agent_commission_cost.numeric' => 'Not a number',
-        'offerItems.*.agent_commission_type.required' => 'Required',
-        'offerItems.*.agent_commission_type.in' => 'Invalid agent commission type',
-        'offerItems.*.ingredients.*.name.required' => 'Required',
-        'offerItems.*.ingredients.*.name.string' => 'Not a string',
-        'offerItems.*.ingredients.*.name.max' => 'Too long',
-        'offerItems.*.ingredients.*.cost.required' => 'Required',
-        'offerItems.*.ingredients.*.cost.numeric' => 'Not a number',
-        'offerItems.*.ingredients.*.cost.min' => 'Not greater than 0',
-        'offerItems.*.ingredients.*.percentage.required' => 'Required',
-        'offerItems.*.ingredients.*.percentage.numeric' => 'Not a number',
-        'offerItems.*.ingredients.*.percentage.min' => 'Not greater than 0',
-        'offerItems.*.ingredients.*.percentage.max' => 'Not less than 100',
-    ];
+    ];  
 
     public function boot()
     {
@@ -361,6 +295,41 @@ class OfferCreate extends Component
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
+        if(!Gate::check('view-product-costs')) {
+            if(!$quantityInTons) {
+                $this->addError('offerItems.' . $index . '.quantity_in_kgs', 'Quantity in Kgs is required');
+                return;
+            }
+            if(!$kgPerPackage) {
+                $this->addError('offerItems.' . $index . '.kg_per_package', 'Kg per package is required');
+                return;
+            }
+            if(!$onePackageCost) {
+                $this->addError('offerItems.' . $index . '.one_package_cost', 'One package cost is required');
+                return;
+            }
+            if(!$item['product_id']) {
+                $this->addError('offerItems.' . $index . '.product_id', 'Product is required');
+                return;
+            }
+            if(!$item['packing_id']) {
+                $this->addError('offerItems.' . $index . '.packing_id', 'Packing is required');
+                return;
+            }
+            if(!$item['freight_cost']) {
+                $this->addError('offerItems.' . $index . '.freight_cost', 'Freight cost is required');
+                return;
+            }
+            if(!$item['sterilization_cost']) {
+                $this->addError('offerItems.' . $index . '.sterilization_cost', 'Sterilization cost is required');
+                return;
+            }
+            if(!$item['agent_commission_cost']) {
+                $this->addError('offerItems.' . $index . '.agent_commission_cost', 'Agent commission cost is required');
+                return;
+            }
+        }
+
         $this->recalculateInternalCost($index);
 
 
@@ -523,7 +492,76 @@ class OfferCreate extends Component
 
     public function saveOffer()
     {
-        $this->validate();
+        $this->validate([
+            'client_id' => 'required|exists:clients,id',
+            'currency_id' => 'required|exists:currencies,id',
+            'currency_rate' => 'required|numeric|min:0',
+            'status' => 'required|in:' . implode(',', Offer::STATUSES),
+            'offerItems' => 'required|array|min:1',
+            'offerItems.*.ingredients' => 'present|array',
+            'offerItems.*.ingredients.*.name' => 'required|string|max:255',
+            'offerItems.*.ingredients.*.cost' => 'required|numeric|min:0',
+            'offerItems.*.ingredients.*.percentage' => 'required|numeric|min:1|max:100',
+            'offerItems.*.product_id' => 'required|exists:products,id',
+            'offerItems.*.packing_id' => 'required|exists:packings,id',
+            'offerItems.*.quantity_in_kgs' => 'required|numeric|min:1',
+            'offerItems.*.kg_per_package' => 'required|numeric|min:1',
+            'offerItems.*.one_package_cost' => 'required|numeric|min:0',
+            'offerItems.*.profit_margain' => 'required|numeric|min:0',
+            'offerItems.*.freight_cost' => 'required|numeric|min:0',
+            'offerItems.*.freight_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
+            'offerItems.*.sterilization_cost' => 'required|numeric|min:0',
+            'offerItems.*.sterilization_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
+            'offerItems.*.agent_commission_cost' => 'required|numeric|min:0',
+            'offerItems.*.agent_commission_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
+        ], [
+            'client_id.required' => 'Please select a client',
+            'client_id.exists' => 'Client not found',
+            'currency_id.required' => 'Required',
+            'currency_id.exists' => 'Currency not found',
+            'currency_rate.required' => 'Required',
+            'currency_rate.numeric' => 'Not a number',
+            'currency_rate.min' => 'Not greater than 0',
+            'status.required' => 'Required',
+            'status.in' => 'Invalid status',
+            'offerItems.*.product_id.required' => 'Required',
+            'offerItems.*.product_id.exists' => 'Product not found',
+            'offerItems.*.packing_id.required' => 'Required',
+            'offerItems.*.packing_id.exists' => 'Packing not found',
+            'offerItems.*.quantity_in_kgs.required' => 'Required',
+            'offerItems.*.quantity_in_kgs.numeric' => 'Not a number',
+            'offerItems.*.quantity_in_kgs.min' => 'Not greater than 0',
+            'offerItems.*.kg_per_package.required' => 'Required',
+            'offerItems.*.kg_per_package.numeric' => 'Not a number',
+            'offerItems.*.kg_per_package.min' => 'Not greater than 0',
+            'offerItems.*.one_package_cost.required' => 'Required',
+            'offerItems.*.one_package_cost.numeric' => 'Not a number',
+            'offerItems.*.one_package_cost.min' => 'Not greater than 0',
+            'offerItems.*.profit_margain.required' => 'Required',
+            'offerItems.*.profit_margain.numeric' => 'Not a number',
+            'offerItems.*.freight_cost.required' => 'Required',
+            'offerItems.*.freight_cost.numeric' => 'Not a number',
+            'offerItems.*.freight_type.required' => 'Required',
+            'offerItems.*.freight_type.in' => 'Invalid freight type',
+            'offerItems.*.sterilization_cost.required' => 'Required',
+            'offerItems.*.sterilization_cost.numeric' => 'Not a number',
+            'offerItems.*.sterilization_type.required' => 'Required',
+            'offerItems.*.sterilization_type.in' => 'Invalid sterilization type',
+            'offerItems.*.agent_commission_cost.required' => 'Required',
+            'offerItems.*.agent_commission_cost.numeric' => 'Not a number',
+            'offerItems.*.agent_commission_type.required' => 'Required',
+            'offerItems.*.agent_commission_type.in' => 'Invalid agent commission type',
+            'offerItems.*.ingredients.*.name.required' => 'Required',
+            'offerItems.*.ingredients.*.name.string' => 'Not a string',
+            'offerItems.*.ingredients.*.name.max' => 'Too long',
+            'offerItems.*.ingredients.*.cost.required' => 'Required',
+            'offerItems.*.ingredients.*.cost.numeric' => 'Not a number',
+            'offerItems.*.ingredients.*.cost.min' => 'Not greater than 0',
+            'offerItems.*.ingredients.*.percentage.required' => 'Required',
+            'offerItems.*.ingredients.*.percentage.numeric' => 'Not a number',
+            'offerItems.*.ingredients.*.percentage.min' => 'Not greater than 0',
+            'offerItems.*.ingredients.*.percentage.max' => 'Not less than 100',
+        ]);
 
         // if (!$this->validateIngredientsTotalPercentage()) return;
 
