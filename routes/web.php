@@ -27,6 +27,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/offers', OfferIndex::class)->name('offers.index');
     Route::get('/offers/create/{duplicate_of_id?}', OfferCreate::class)->name('offers.create.duplicate');
     Route::get('/offers/create', OfferCreate::class)->name('offers.create');
+    Route::get('/', OfferCreate::class);
     Route::get('/offers/{offer_id}', OfferShow::class)->name('offers.show');
 
     Route::get('/settings/products', ProductsIndex::class)->name('products.index');
@@ -38,7 +39,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/settings/packings', PackingsIndex::class)->name('packings.index');
     Route::get('/settings/specs', SpecsIndex::class)->name('specs.index');
 
-    Route::get('/', UsersIndex::class)->name('users.index');
     Route::get('/settings/app-logs', AppLogIndex::class)->name('app-logs');
 
     Route::get('/logout', function () {
