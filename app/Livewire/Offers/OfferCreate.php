@@ -295,6 +295,7 @@ class OfferCreate extends Component
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
         if(!Gate::check('view-product-costs') && $forced) {
+            $this->resetErrorBag();
             if(!$quantityInTons) {
                 $this->addError('offerItems.' . $index . '.quantity_in_kgs', 'Quantity in Kgs is required');
                 return;
