@@ -60,12 +60,6 @@ class OfferCreate extends Component
 
     protected $listeners = ['clientsSelected'];
 
-    protected $rules = [
-        'offerItems.*.product_id' => 'required|exists:products,id',
-        'offerItems.*.quantity_in_kgs' => 'required|numeric|min:0',
-        'offerItems.*.profit_margain' => 'required|numeric|min:0',
-    ];  
-
     public function boot()
     {
         $this->offerService = app(OfferServiceProvider::class);
