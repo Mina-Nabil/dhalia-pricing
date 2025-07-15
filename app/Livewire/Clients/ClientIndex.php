@@ -50,11 +50,6 @@ class ClientIndex extends Component
         $this->clientService = app(ClientServiceProvider::class);
     }
 
-    public function mount()
-    {
-        $this->authorize('view-client-any');
-    }
-
     public function updatingSearch()
     {
         $this->resetPage();
