@@ -281,7 +281,7 @@ class OfferCreate extends Component
         }
     }
 
-    private function recalculateOfferItem($index)
+    private function recalculateOfferItem($index, $forced = false)
     {
         $item = &$this->offerItems[$index];
         // Calculate total packing cost
@@ -289,7 +289,7 @@ class OfferCreate extends Component
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
-        if(!Gate::check('view-product-costs')) {
+        if(!Gate::check('view-product-costs') && $forced) {
             if(!$quantityInTons) {
                 $this->addError('offerItems.' . $index . '.quantity_in_kgs', 'Quantity in Kgs is required');
                 return;
@@ -322,6 +322,8 @@ class OfferCreate extends Component
                 $this->addError('offerItems.' . $index . '.agent_commission_cost', 'Agent commission cost is required');
                 return;
             }
+        } elseif(!Gate::check('view-product-costs')) {
+            return;
         }
 
         $this->recalculateInternalCost($index);
