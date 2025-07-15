@@ -66,6 +66,12 @@
                         <i class="fa fa-trash"></i> Remove
                     </button>
                 @endif
+                @cannot('view-product-costs')
+                    <button wire:click="toggleCosts({{ $index }})" type="button"
+                        class="btn btn-primary btn-sm">
+                        <i class="fa fa-calculator"></i> Calculate Price
+                    </button>
+                @endcan
             </x-slot>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
