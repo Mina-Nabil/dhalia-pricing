@@ -19,8 +19,6 @@ class OfferIndex extends Component
 
     /** @var OfferServiceProvider */
     protected $offerService;
-    protected $clientService;
-    protected $userService;
 
     // Search and filters
     public $search = '';
@@ -51,8 +49,6 @@ class OfferIndex extends Component
     public function boot()
     {
         $this->offerService = app(OfferServiceProvider::class);
-        $this->clientService = app(ClientServiceProvider::class);
-        $this->userService = app(UserServiceProvider::class);
     }
 
     public function mount()
@@ -265,16 +261,10 @@ class OfferIndex extends Component
             with: ['user', 'client', 'items.product']
         );
 
-        $users = $this->userService->getUsers();
-        $clients = $this->clientService->getClients(paginate: false);
-        $statuses = Offer::STATUSES;
         $sortFields = OfferServiceProvider::SORT_FIELDS;
 
         return view('livewire.offers.offer-index', [
             'offers' => $offers,
-            'users' => $users,
-            'clients' => $clients,
-            'statuses' => $statuses,
             'sortFields' => $sortFields,
         ]);
     }
