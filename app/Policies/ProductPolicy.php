@@ -17,6 +17,14 @@ class ProductPolicy
     }
 
     /**
+     * Determine whether the user can view any models.
+     */
+    public function viewCosts(User $user): bool
+    {
+        return $user->is_admin;
+    }
+
+    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Product $product): bool

@@ -772,6 +772,7 @@ class ProductServiceProvider extends ServiceProvider
     {
         Gate::define('view-product', [ProductPolicy::class, 'view']);
         Gate::define('view-product-list', [ProductPolicy::class, 'viewAny']);
+        Gate::define('view-product-costs', [ProductPolicy::class, 'viewCosts']);
         Gate::define('create-product', [ProductPolicy::class, 'create']);
         Gate::define('update-product', [ProductPolicy::class, 'update']);
         Gate::define('delete-product', [ProductPolicy::class, 'delete']);

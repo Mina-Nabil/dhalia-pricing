@@ -108,10 +108,12 @@
                         </x-select>
 
                         <div class="grid grid-cols-2 gap-3 mb-3">
-                            {{-- Internal Cost --}}
-                            <x-text-input wire:model="offerItems.{{ $index }}.internal_cost"
-                                id="offerItems.{{ $index }}.internal_cost" type="number" step="0.001"
-                                min="0" class="form-control mb-3" :label="__('Internal Cost per Ton')" readonly />
+                            @can('view-product-costs')
+                                {{-- Internal Cost --}}
+                                <x-text-input wire:model="offerItems.{{ $index }}.internal_cost"
+                                    id="offerItems.{{ $index }}.internal_cost" type="number" step="0.001"
+                                    min="0" class="form-control mb-3" :label="__('Internal Cost per Ton')" readonly />
+                            @endcan
 
                             {{-- Quantity in Tons --}}
                             <x-text-input wire:model="offerItems.{{ $index }}.quantity_in_kgs"
@@ -240,16 +242,17 @@
                                 errorMessage="{{ $errors->first('offerItems.' . $index . '.one_package_cost') }}" />
                         </div>
 
-                        <x-text-input :label="__('Ton Packing Cost')"
-                            value="{{ number_format($item['total_packing_cost'] ?? 0, 2) }}" readonly
-                            class="form-control bg-light mb-3" />
-
-                        {{-- Pricing --}}
-
-                        <x-text-input :label="__('Ton Base Cost (Currency)')"
-                            value="{{ number_format($item['base_cost_currency'] ?? 0, 2) }}" readonly
-                            class="form-control bg-light mb-3" />
-
+                        @can('view-product-costs')
+                            <x-text-input :label="__('Ton Packing Cost')"
+                                value="{{ number_format($item['total_packing_cost'] ?? 0, 2) }}" readonly
+                                class="form-control bg-light mb-3" />
+                        @endcan
+                        @can('view-product-costs')
+                            {{-- Pricing --}}
+                            <x-text-input :label="__('Ton Base Cost (Currency)')"
+                                value="{{ number_format($item['base_cost_currency'] ?? 0, 2) }}" readonly
+                                class="form-control bg-light mb-3" />
+                        @endcan
 
 
                         <x-text-input wire:model="offerItems.{{ $index }}.profit_margain"
@@ -293,10 +296,12 @@
                                     </x-select>
 
                                 </div>
-                                <div>
-                                    <x-text-input value="{{ number_format($item['freight_total_cost'] ?? 0, 2) }}"
-                                        readonly class="form-control form-control-sm bg-light w-full" />
-                                </div>
+                                @can('view-product-costs')
+                                    <div>
+                                        <x-text-input value="{{ number_format($item['freight_total_cost'] ?? 0, 2) }}"
+                                            readonly class="form-control form-control-sm bg-light w-full" />
+                                    </div>
+                                @endcan
                             </div>
                         </div>
 
@@ -324,11 +329,13 @@
                                     </x-select>
 
                                 </div>
-                                <div>
-                                    <x-text-input
-                                        value="{{ number_format($item['sterilization_total_cost'] ?? 0, 2) }}"
-                                        readonly class="form-control form-control-sm bg-light w-full" />
-                                </div>
+                                @can('view-product-costs')
+                                    <div>
+                                        <x-text-input
+                                            value="{{ number_format($item['sterilization_total_cost'] ?? 0, 2) }}"
+                                            readonly class="form-control form-control-sm bg-light w-full" />
+                                    </div>
+                                @endcan
                             </div>
                         </div>
 
@@ -356,24 +363,28 @@
                                     </x-select>
 
                                 </div>
-                                <div>
-                                    <x-text-input
-                                        value="{{ number_format($item['agent_commission_total_cost'] ?? 0, 2) }}"
-                                        readonly class="form-control form-control-sm bg-light w-full" />
-                                </div>
+                                @can('view-product-costs')
+                                    <div>
+                                        <x-text-input
+                                            value="{{ number_format($item['agent_commission_total_cost'] ?? 0, 2) }}"
+                                            readonly class="form-control form-control-sm bg-light w-full" />
+                                    </div>
+                                @endcan
                             </div>
                         </div>
 
                         {{-- Summary --}}
                         <div class="border-t pt-2">
                             <strong class="text-gray-600 mb-5">Summary</strong>
-                            <div class="mb-2">
-                                <div class="flex justify-between">
-                                    <small>Total Ton Costs:</small>
-                                    <strong
-                                        class="text-red-600">{{ number_format($item['total_costs'] ?? 0, 2) }}</strong>
+                            @can('view-product-costs')
+                                <div class="mb-2">
+                                    <div class="flex justify-between">
+                                        <small>Total Ton Costs:</small>
+                                        <strong
+                                            class="text-red-600">{{ number_format($item['total_costs'] ?? 0, 2) }}</strong>
+                                    </div>
                                 </div>
-                            </div>
+                            @endcan
                             <div class="mb-2">
                                 <div class="flex justify-between">
                                     <small>Tons:</small>
@@ -415,11 +426,13 @@
                     <h3 class="text-teal-600 text-2xl font-bold">
                         {{ number_format(array_sum(array_column($offerItems, 'quantity_in_kgs')), 2) }}</h3>
                 </div>
-                <div class="text-center">
-                    <h5 class="text-gray-600 text-sm">Costs Total</h5>
-                    <h3 class="text-yellow-600 text-2xl font-bold">
-                        {{ number_format(array_sum(array_column($offerItems, 'total_costs')), 2) }}</h3>
-                </div>
+                @can('view-product-costs')
+                    <div class="text-center">
+                        <h5 class="text-gray-600 text-sm">Costs Total</h5>
+                        <h3 class="text-yellow-600 text-2xl font-bold">
+                            {{ number_format(array_sum(array_column($offerItems, 'total_costs')), 2) }}</h3>
+                    </div>
+                @endcan
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Price Total</h5>
                     <h3 class="text-green-600 text-2xl font-bold">
