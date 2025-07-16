@@ -128,7 +128,7 @@ class OfferServiceProvider extends ServiceProvider
         return $offer;
     }
 
-    public function createOffer($status, $clientId, $currencyId, $currencyRate, $offerItems, $duplicateOfId = null)
+    public function createOffer($status, $clientId, $currencyId, $currencyRate, $offerItems, $duplicateOfId = null, $notes = null)
     {
         Gate::authorize('create-offers');
         $this->checkOfferItemsArray($offerItems);
@@ -180,6 +180,7 @@ class OfferServiceProvider extends ServiceProvider
             'total_costs' => $totalCosts,
             'total_profit' => $totalProfit,
             'profit_percentage' => $profitPercentage,
+            'notes' => $notes,
         ]);
         try {
             DB::transaction(function () use ($offer, $offerItems) {
@@ -212,6 +213,21 @@ class OfferServiceProvider extends ServiceProvider
         } catch (Exception $e) {
             report($e);
             throw new OfferManagementException('Failed to update offer status');
+        }
+    }
+
+    public function updateOfferNotes($id, $notes)
+    {
+        $offer = $this->getOffer($id, false);
+        Gate::authorize('update-offer-notes', $offer);
+        $offer->notes = $notes;
+        try {
+            $offer->save();
+            AppLog::info('Offer notes updated', "Offer $offer->code notes updated", $offer);
+            return $offer;
+        } catch (Exception $e) {
+            report($e);
+            throw new OfferManagementException('Failed to update offer notes');
         }
     }
 
@@ -467,6 +483,7 @@ class OfferServiceProvider extends ServiceProvider
         Gate::define('view-offer', [OfferPolicy::class, 'view']);
         Gate::define('create-offers', [OfferPolicy::class, 'create']);
         Gate::define('update-offer', [OfferPolicy::class, 'update']);
+        Gate::define('update-offer-notes', [OfferPolicy::class, 'updateNotes']);
         Gate::define('delete-offer', [OfferPolicy::class, 'delete']);
         Gate::define('can-export-offers', [OfferPolicy::class, 'canExport']);
     }

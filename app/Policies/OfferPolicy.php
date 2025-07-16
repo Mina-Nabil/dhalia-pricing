@@ -53,6 +53,11 @@ class OfferPolicy
      */
     public function update(User $user, Offer $offer): bool
     {
+        return $user->is_admin;
+    }
+
+    public function updateNotes(User $user, Offer $offer): bool
+    {
         return $user->is_admin || $user->id === $offer->user_id;
     }
 

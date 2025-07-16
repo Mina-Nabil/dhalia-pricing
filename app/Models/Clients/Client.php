@@ -17,6 +17,7 @@ class Client extends Model
 
     protected $fillable = [
         'name',
+        'code',
         'phone',
         'address',
         'email',
@@ -31,6 +32,7 @@ class Client extends Model
         $query->where(function ($query) use ($words) {
             foreach ($words as $word) {
                 $query->orWhere('name', 'like', '%' . $word . '%');
+                $query->orWhere('code', 'like', '%' . $word . '%');
                 $query->orWhere('phone', 'like', '%' . $word . '%');
                 $query->orWhere('email', 'like', '%' . $word . '%');
             }

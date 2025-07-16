@@ -38,7 +38,7 @@
     <div class="flex flex-wrap sm:flex-nowrap justify-between space-x-3 rtl:space-x-reverse mb-6">
         <div class="flex-1 w-full sm:w-auto mb-3 sm:mb-0">
             <div class="relative">
-                <input type="text" class="form-control pl-10" placeholder="Search by name, phone, or email..."
+                <input type="text" class="form-control pl-10" placeholder="Search by name, code, phone, or email..."
                     wire:model.live.debounce.300ms="search">
                 <span class="absolute right-0 top-0 w-9 h-full flex items-center justify-center text-slate-400">
                     <iconify-icon icon="heroicons-solid:search"></iconify-icon>
@@ -60,6 +60,7 @@
                             <thead class="bg-slate-200 dark:bg-slate-700">
                                 <tr>
                                     <th scope="col" class="table-th">Name</th>
+                                    <th scope="col" class="table-th">Code</th>
                                     <th scope="col" class="table-th">Phone</th>
                                     <th scope="col" class="table-th">Email</th>
                                     <th scope="col" class="table-th">Address</th>
@@ -78,6 +79,9 @@
                                                     {{ $client->name }}
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td class="table-td">
+                                            {{ $client->code ?: '-' }}
                                         </td>
                                         <td class="table-td">
                                             {{ $client->phone ?: '-' }}
@@ -112,7 +116,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="table-td text-center">
+                                        <td colspan="7" class="table-td text-center">
                                             <div class="flex flex-col items-center justify-center py-8">
                                                 <iconify-icon icon="heroicons:users"
                                                     class="text-slate-300 text-6xl mb-4"></iconify-icon>
@@ -156,7 +160,7 @@
                         </p>
                         <div class="bg-slate-100 dark:bg-slate-700 p-3 rounded text-sm">
                             <strong>Required format:</strong><br>
-                            A: Client Name | B: Phone | C: Email | D: Address | E: Country | F: Notes
+                            A: Client Name | B: Code | C: Phone | D: Email | E: Address | F: Country | G: Notes
                         </div>
                     </div>
                     

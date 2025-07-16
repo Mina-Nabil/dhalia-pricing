@@ -48,6 +48,7 @@ class Offer extends Model
         'total_costs',
         'total_profit',
         'profit_percentage',
+        'notes',
     ];
 
     //scopes

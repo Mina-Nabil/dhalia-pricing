@@ -57,13 +57,14 @@ class ClientServiceProvider extends ServiceProvider
         return Client::where('name', $name)->exists();
     }
 
-    public function createClient($name, $phone, $address, $email, $notes, $country_name)
+    public function createClient($name, $code, $phone, $address, $email, $notes, $country_name)
     {
         Gate::authorize('create-client');
         try {
 
             $client = Client::create([
                 'name' => $name,
+                'code' => $code,
                 'phone' => $phone,
                 'address' => $address,
                 'email' => $email,
@@ -85,12 +86,13 @@ class ClientServiceProvider extends ServiceProvider
         return Client::where('name', $name)->first();
     }
 
-    public function updateClient(Client $client, $name, $phone, $address, $email, $notes, $country_name)
+    public function updateClient(Client $client, $name, $code, $phone, $address, $email, $notes, $country_name)
     {
         Gate::authorize('update-client', $client);
         try {
             $client->update([
                 'name' => $name,
+                'code' => $code,
                 'phone' => $phone,
                 'address' => $address,
                 'email' => $email,
@@ -207,15 +209,16 @@ class ClientServiceProvider extends ServiceProvider
             // Define headers
             $headers = [
                 'A1' => 'Client Name',
-                'B1' => 'Phone',
-                'C1' => 'Email',
-                'D1' => 'Address',
-                'E1' => 'Country',
-                'F1' => 'Notes',
-                'G1' => 'Created By',
-                'H1' => 'Associated Users',
-                'I1' => 'Additional Info Count',
-                'J1' => 'Created Date'
+                'B1' => 'Code',
+                'C1' => 'Phone',
+                'D1' => 'Email',
+                'E1' => 'Address',
+                'F1' => 'Country',
+                'G1' => 'Notes',
+                'H1' => 'Created By',
+                'I1' => 'Associated Users',
+                'J1' => 'Additional Info Count',
+                'K1' => 'Created Date'
             ];
 
             // Set headers
@@ -224,7 +227,7 @@ class ClientServiceProvider extends ServiceProvider
             }
 
             // Style headers
-            $headerRange = 'A1:J1';
+            $headerRange = 'A1:K1';
             $sheet->getStyle($headerRange)->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -248,7 +251,7 @@ class ClientServiceProvider extends ServiceProvider
             ]);
 
             // Auto-size columns
-            foreach (range('A', 'J') as $column) {
+            foreach (range('A', 'K') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 
@@ -256,23 +259,24 @@ class ClientServiceProvider extends ServiceProvider
             $row = 2;
             foreach ($clients as $client) {
                 $sheet->setCellValue('A' . $row, $client->name);
-                $sheet->setCellValue('B' . $row, $client->phone ?: 'N/A');
-                $sheet->setCellValue('C' . $row, $client->email ?: 'N/A');
-                $sheet->setCellValue('D' . $row, $client->address ?: 'N/A');
-                $sheet->setCellValue('E' . $row, $client->country_name ?: 'N/A');
-                $sheet->setCellValue('F' . $row, $client->notes ?: 'N/A');
-                $sheet->setCellValue('G' . $row, $client->createdBy->name ?? 'N/A');
+                $sheet->setCellValue('B' . $row, $client->code ?: 'N/A');
+                $sheet->setCellValue('C' . $row, $client->phone ?: 'N/A');
+                $sheet->setCellValue('D' . $row, $client->email ?: 'N/A');
+                $sheet->setCellValue('E' . $row, $client->address ?: 'N/A');
+                $sheet->setCellValue('F' . $row, $client->country_name ?: 'N/A');
+                $sheet->setCellValue('G' . $row, $client->notes ?: 'N/A');
+                $sheet->setCellValue('H' . $row, $client->createdBy->name ?? 'N/A');
 
                 // Get associated users names
                 $associatedUsers = $client->users->pluck('name')->join(', ');
-                $sheet->setCellValue('H' . $row, $associatedUsers ?: 'None');
+                $sheet->setCellValue('I' . $row, $associatedUsers ?: 'None');
 
-                $sheet->setCellValue('I' . $row, $client->infos->count());
-                $sheet->setCellValue('J' . $row, $client->created_at->format('Y-m-d H:i:s'));
+                $sheet->setCellValue('J' . $row, $client->infos->count());
+                $sheet->setCellValue('K' . $row, $client->created_at->format('Y-m-d H:i:s'));
 
                 // Style data rows with alternating colors
                 if ($row % 2 == 0) {
-                    $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
+                    $sheet->getStyle('A' . $row . ':K' . $row)->applyFromArray([
                         'fill' => [
                             'fillType' => Fill::FILL_SOLID,
                             'startColor' => ['rgb' => 'F8FAFC'] // Light gray
@@ -281,7 +285,7 @@ class ClientServiceProvider extends ServiceProvider
                 }
 
                 // Add borders to data rows
-                $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray([
+                $sheet->getStyle('A' . $row . ':K' . $row)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -330,11 +334,12 @@ class ClientServiceProvider extends ServiceProvider
                 try {
                     // Read data from cells
                     $clientName = trim($sheet->getCell('A' . $row)->getCalculatedValue() ?? '');
-                    $phone = trim($sheet->getCell('B' . $row)->getCalculatedValue() ?? '');
-                    $email = trim($sheet->getCell('C' . $row)->getCalculatedValue() ?? '');
-                    $address = trim($sheet->getCell('D' . $row)->getCalculatedValue() ?? '');
-                    $countryName = trim($sheet->getCell('E' . $row)->getCalculatedValue() ?? '');
-                    $notes = trim($sheet->getCell('F' . $row)->getCalculatedValue() ?? '');
+                    $code = trim($sheet->getCell('B' . $row)->getCalculatedValue() ?? '');
+                    $phone = trim($sheet->getCell('C' . $row)->getCalculatedValue() ?? '');
+                    $email = trim($sheet->getCell('D' . $row)->getCalculatedValue() ?? '');
+                    $address = trim($sheet->getCell('E' . $row)->getCalculatedValue() ?? '');
+                    $countryName = trim($sheet->getCell('F' . $row)->getCalculatedValue() ?? '');
+                    $notes = trim($sheet->getCell('G' . $row)->getCalculatedValue() ?? '');
 
                     // Skip empty rows
                     if (empty($clientName)) {
@@ -342,6 +347,7 @@ class ClientServiceProvider extends ServiceProvider
                     }
 
                     // Convert "N/A" values to null
+                    $code = ($code === 'N/A') ? null : $code;
                     $phone = ($phone === 'N/A') ? null : $phone;
                     $email = ($email === 'N/A') ? null : $email;
                     $address = ($address === 'N/A') ? null : $address;
@@ -365,6 +371,7 @@ class ClientServiceProvider extends ServiceProvider
                         $this->updateClient(
                             $existingClient,
                             $clientName,
+                            $code,
                             $phone,
                             $address,
                             $email,
@@ -378,6 +385,7 @@ class ClientServiceProvider extends ServiceProvider
                         // Create new client
                         $newClient = $this->createClient(
                             $clientName,
+                            $code,
                             $phone,
                             $address,
                             $email,

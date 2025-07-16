@@ -20,6 +20,7 @@ class OfferShow extends Component
     public $offer_id;
     public $offer;
     public $statuses = [];
+    public $notes = '';
 
     public function boot()
     {
@@ -34,6 +35,9 @@ class OfferShow extends Component
         
         // Load available statuses
         $this->statuses = Offer::STATUSES;
+        
+        // Load notes
+        $this->notes = $this->offer->notes ?? '';
         
         try {
         } catch (OfferManagementException $e) {
@@ -86,6 +90,29 @@ class OfferShow extends Component
         } catch (Exception $e) {
             report($e);
             $this->alert('error', 'Failed to delete offer: ' . $e->getMessage());
+        }
+    }
+
+    public function updateNotes()
+    {
+        try {
+            // Validate notes
+            $this->validate([
+                'notes' => 'nullable|string',
+            ]);
+            
+            // Update the offer notes using the service
+            $this->offer = $this->offerService->updateOfferNotes($this->offer->id, $this->notes);
+            
+            $this->alert('success', 'Notes updated successfully!');
+            
+        } catch (OfferManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', 'You are not authorized to update this offer.');
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Failed to update notes: ' . $e->getMessage());
         }
     }
 

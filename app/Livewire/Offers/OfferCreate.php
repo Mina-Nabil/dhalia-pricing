@@ -41,6 +41,7 @@ class OfferCreate extends Component
     public $client_id = '';
     public $currency_id = '';
     public $currency_rate = 1;
+    public $notes = '';
     public $original_duplicate_of_id = null;
     public $duplicate_of_id = null;
     public $duplicate_of_code = null;
@@ -281,69 +282,57 @@ class OfferCreate extends Component
         if (isset($this->offerItems[$index]['product_id']) && $this->offerItems[$index]['product_id']) {
             $product = $this->products->firstWhere('id', $this->offerItems[$index]['product_id']);
             if ($product) {
-                $this->offerItems[$index]['internal_cost'] = $product->calculateActualCost($this->offerItems[$index]['quantity_in_kgs'] / 1000);
+                $this->offerItems[$index]['internal_cost'] = $product->calculateBaseCost($this->offerItems[$index]['quantity_in_kgs'] / 1000);
             }
         }
     }
 
     private function recalculateOfferItem($index, $forced = false)
     {
+        if (!isset($this->offerItems[$index]['product_id']) || !$this->offerItems[$index]['product_id']) return;
+
+
         $item = &$this->offerItems[$index];
         // Calculate total packing cost
         $quantityInTons = isset($item['quantity_in_kgs']) && is_numeric($item['quantity_in_kgs']) ? ($item['quantity_in_kgs'] / 1000) : 0;
         $kgPerPackage = isset($item['kg_per_package']) && is_numeric($item['kg_per_package']) ? $item['kg_per_package'] : 1;
         $onePackageCost = isset($item['one_package_cost']) && is_numeric($item['one_package_cost']) ? $item['one_package_cost'] : 0;
 
-        if(!Gate::check('view-product-costs') && $forced) {
+        if (!Gate::check('view-product-costs') && $forced) {
             $this->resetErrorBag();
-            if(!$quantityInTons) {
+            if (!$quantityInTons) {
                 $this->addError('offerItems.' . $index . '.quantity_in_kgs', 'Quantity in Kgs is required');
                 return;
             }
-            if(!$kgPerPackage) {
+            if (!$kgPerPackage) {
                 $this->addError('offerItems.' . $index . '.kg_per_package', 'Kg per package is required');
                 return;
             }
-            if(!$onePackageCost) {
+            if (!$onePackageCost) {
                 $this->addError('offerItems.' . $index . '.one_package_cost', 'One package cost is required');
                 return;
             }
-            if(!$item['product_id']) {
+            if (!$item['product_id']) {
                 $this->addError('offerItems.' . $index . '.product_id', 'Product is required');
                 return;
             }
-            if(!$item['packing_id']) {
+            if (!$item['packing_id']) {
                 $this->addError('offerItems.' . $index . '.packing_id', 'Packing is required');
                 return;
             }
-            if(!$item['freight_cost']) {
-                $this->addError('offerItems.' . $index . '.freight_cost', 'Freight cost is required');
-                return;
-            }
-            if(!$item['sterilization_cost']) {
-                $this->addError('offerItems.' . $index . '.sterilization_cost', 'Sterilization cost is required');
-                return;
-            }
-            if(!$item['agent_commission_cost']) {
-                $this->addError('offerItems.' . $index . '.agent_commission_cost', 'Agent commission cost is required');
-                return;
-            }
-        } elseif(!Gate::check('view-product-costs')) {
+        } elseif (!Gate::check('view-product-costs')) {
             return;
         }
 
         $this->recalculateInternalCost($index);
-
-
-        $internalCurrencyCost = $item['internal_cost'] / $this->currency_rate;
-
+        
         if ($kgPerPackage > 0 && $quantityInTons > 0) {
             $totalPackages = ($quantityInTons * 1000) / $kgPerPackage; // Convert tons to kg
             $item['total_packing_cost'] = ($totalPackages * $onePackageCost) / $quantityInTons;
         } else {
             $item['total_packing_cost'] = 0;
         }
-
+        
         // Calculate sum of ingredients cost
         $ingredientsCost = 0;
         if (isset($item['ingredients']) && is_array($item['ingredients'])) {
@@ -353,12 +342,19 @@ class OfferCreate extends Component
             }
         }
         $item['ingredients_cost'] = $ingredientsCost;
-        $item['raw_ton_cost'] = $ingredientsCost + $item['internal_cost'];
-
-        // Calculate base_cost_currency
         $totalPackingCost = $item['total_packing_cost'] ?? 0;
+
+        $product = $this->products->firstWhere('id', $this->offerItems[$index]['product_id']);
+
+        $item['internal_cost'] = $product->calculateFinalCost($quantityInTons, $totalPackingCost, $ingredientsCost);
+        
+        $item['raw_ton_cost'] = $ingredientsCost + $item['internal_cost'];
+        
+        $internalCurrencyCost = $item['internal_cost'] / $this->currency_rate;
         $currencyRate = $this->currency_rate ?: 1;
+        // Calculate base_cost_currency
         $item['base_cost_currency'] = $internalCurrencyCost + (($totalPackingCost + $ingredientsCost) / $currencyRate);
+
 
         // Calculate FOB price
         $profitMargin = $item['profit_margain'] ?? 0;
@@ -395,17 +391,23 @@ class OfferCreate extends Component
             $item['fob_price']
         );
 
+
         // Calculate total costs
         $item['total_costs'] = $baseCostCurrency +
             ($item['freight_total_cost'] ?? 0) +
             ($item['sterilization_total_cost'] ?? 0) +
             ($item['agent_commission_total_cost'] ?? 0);
 
-        // Calculate total profit
-        $item['total_profit'] = ($item['fob_price'] ?? 0) - ($item['total_costs'] ?? 0);
+        // Set price FOB + total costs
+        $item['price'] = ($item['fob_price'] ?? 0) + ($item['freight_total_cost'] ?? 0) +
+            ($item['sterilization_total_cost'] ?? 0) +
+            ($item['agent_commission_total_cost'] ?? 0);
 
-        // Set price (same as FOB price for offer item)
-        $item['price'] = ($item['fob_price'] ?? 0) * $quantityInTons;
+        // Calculate total profit
+        $item['total_profit'] = ($item['price'] ?? 0) - ($item['total_costs'] ?? 0);
+
+        // Calculate total price
+        $item['total_price'] = ($item['price'] ?? 0) * $quantityInTons;
     }
 
     private function calculateCostByType(&$item, $costField, $typeField, $totalField, $quantityInTons, $fobPrice)
@@ -454,6 +456,7 @@ class OfferCreate extends Component
         $this->client_id = $offer->client_id;
         $this->currency_id = $offer->currency_id;
         $this->currency_rate = $offer->currency_rate;
+        $this->notes = $offer->notes;
         $this->offerItems = $offer->items->map(function ($item) {
             return [
                 'available_products' => $this->products->where('product_category_id', $item->product->product_category_id)->where('spec_id', $item->product->spec_id),
@@ -499,6 +502,7 @@ class OfferCreate extends Component
             'currency_id' => 'required|exists:currencies,id',
             'currency_rate' => 'required|numeric|min:0',
             'status' => 'required|in:' . implode(',', Offer::STATUSES),
+            'notes' => 'nullable|string',
             'offerItems' => 'required|array|min:1',
             'offerItems.*.ingredients' => 'present|array',
             'offerItems.*.ingredients.*.name' => 'required|string|max:255',
@@ -574,7 +578,8 @@ class OfferCreate extends Component
                 $this->currency_id,
                 $this->currency_rate,
                 $this->offerItems,
-                $this->duplicate_of_id
+                $this->duplicate_of_id,
+                $this->notes
             );
 
             $this->alert('success', 'Offer created successfully!');

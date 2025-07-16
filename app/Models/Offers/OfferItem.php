@@ -47,7 +47,8 @@ class OfferItem extends Model
         'total_profit',
         'ingredients_cost',
         'raw_ton_cost',
-        'price' //total item price
+        'price', //total item price
+        'total_price' //total price for the item
     ];
 
     const REQUIRED_FIELDS = [
@@ -76,7 +77,8 @@ class OfferItem extends Model
         'ingredients',
         'ingredients_cost',
         'raw_ton_cost',
-        'price' //total item price
+        'price', //final price per ton
+        'total_price' //total price for the item
     ];
 
     public function offer(): BelongsTo

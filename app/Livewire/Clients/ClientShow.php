@@ -20,6 +20,7 @@ class ClientShow extends Component
 
     // Client form properties
     public $clientName = '';
+    public $clientCode = '';
     public $clientPhone = '';
     public $clientAddress = '';
     public $clientEmail = '';
@@ -51,6 +52,7 @@ class ClientShow extends Component
     public function loadClientData()
     {
         $this->clientName = $this->client->name;
+        $this->clientCode = $this->client->code;
         $this->clientPhone = $this->client->phone;
         $this->clientAddress = $this->client->address;
         $this->clientEmail = $this->client->email;
@@ -78,6 +80,7 @@ class ClientShow extends Component
     {
         $this->validate([
             'clientName' => 'required|string|max:255',
+            'clientCode' => 'nullable|string|max:50',
             'clientPhone' => 'nullable|string|max:20',
             'clientAddress' => 'nullable|string|max:500',
             'clientEmail' => 'nullable|email|max:255',
@@ -89,6 +92,7 @@ class ClientShow extends Component
             $this->clientService->updateClient(
                 $this->client,
                 $this->clientName,
+                $this->clientCode,
                 $this->clientPhone,
                 $this->clientAddress,
                 $this->clientEmail,

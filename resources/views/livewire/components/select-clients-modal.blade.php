@@ -64,6 +64,7 @@
                             <tr>
                                 <th scope="col" class="table-th w-16 whitespace-nowrap">Select</th>
                                 <th scope="col" class="table-th whitespace-nowrap">Name</th>
+                                <th scope="col" class="table-th whitespace-nowrap">Code</th>
                                 <th scope="col" class="table-th whitespace-nowrap">Phone</th>
                                 <th scope="col" class="table-th whitespace-nowrap">Email</th>
                                 <th scope="col" class="table-th whitespace-nowrap">Address</th>
@@ -85,6 +86,8 @@
                                     <td class="table-td font-medium whitespace-nowrap bg-white dark:bg-slate-800">
                                         {{ $client->name }}</td>
                                     <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">
+                                        {{ $client->code ?? 'N/A' }}</td>
+                                    <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">
                                         {{ $client->phone ?? 'N/A' }}</td>
                                     <td class="table-td whitespace-nowrap bg-white dark:bg-slate-800">
                                         {{ $client->email ?? 'N/A' }}</td>
@@ -93,7 +96,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5"
+                                    <td colspan="6"
                                         class="table-td text-center text-slate-500 whitespace-nowrap bg-white dark:bg-slate-800">
                                         @if ($search)
                                             No clients found matching "{{ $search }}"

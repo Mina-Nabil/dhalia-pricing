@@ -47,6 +47,15 @@
                 errorMessage="{{ $errors->first('currency_rate') }}" />
 
         </div>
+
+        <div class="col-span-3 mt-4">
+            <x-input-label for="notes" :value="__('Notes')" />
+            <textarea wire:model="notes" id="notes" name="notes" rows="3" class="form-control"
+                placeholder="Enter any additional notes or comments..."></textarea>
+            @error('notes')
+                <span class="text-danger-500 small">{{ $message }}</span>
+            @enderror
+        </div>
     </x-card>
 
     {{-- Offer Items Cards --}}
@@ -268,7 +277,7 @@
                         <x-text-input wire:model="offerItems.{{ $index }}.profit_margain"
                             wire:change="recalculate({{ $index }})"
                             id="offerItems.{{ $index }}.profit_margain" type="number" step="0.01"
-                            min="0" class="form-control" :label="__('Profit Margin (%)')"
+                            min="0" class="form-control mb-3" :label="__('Profit Margin (%)')"
                             errorMessage="{{ $errors->first('offerItems.' . $index . '.profit_margain') }}" />
 
                         <x-text-input :label="__('Ton FOB Price')" value="{{ number_format($item['fob_price'] ?? 0, 2) }}"
@@ -395,11 +404,12 @@
                                     </div>
                                 </div>
                             @endcan
-                            <div class="mb-2">
+
+                            <div>
                                 <div class="flex justify-between">
-                                    <small>Tons:</small>
+                                    <small>Price Per Ton:</small>
                                     <strong
-                                        class="text-red-600">{{ number_format($item['quantity_in_kgs'] / 1000 ?? 0, 2) }}</strong>
+                                        class="text-blue-600">{{ number_format($item['price'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                             <div class="mb-2">
@@ -409,11 +419,18 @@
                                         class="text-green-600">{{ number_format($item['total_profit'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
+                            <div class="mb-2">
+                                <div class="flex justify-between">
+                                    <small>Tons:</small>
+                                    <strong
+                                        class="text-red-600">{{ number_format($item['quantity_in_kgs'] / 1000 ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
                             <div>
                                 <div class="flex justify-between">
                                     <small>Total Price:</small>
                                     <strong
-                                        class="text-blue-600">{{ number_format($item['price'] ?? 0, 2) }}</strong>
+                                        class="text-blue-600">{{ number_format($item['total_price'] ?? 0, 2) }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -434,7 +451,7 @@
                 <div class="text-center">
                     <h5 class="text-gray-600 text-sm">Tons Total</h5>
                     <h3 class="text-teal-600 text-2xl font-bold">
-                        {{ number_format(array_sum(array_column($offerItems, 'quantity_in_kgs')), 2) }}</h3>
+                        {{ number_format(array_sum(array_column($offerItems, 'quantity_in_kgs')) / 1000, 2) }}</h3>
                 </div>
                 @can('view-product-costs')
                     <div class="text-center">

@@ -15,10 +15,12 @@ class AddClientModal extends Component
 
     public $newClientModal = false;
     public $clientName = '';
+    public $clientCode = '';
     public $clientPhone = '';
     public $clientAddress = '';
     public $clientEmail = '';
     public $clientNotes = '';
+    public $clientCountryName = '';
     public $clientNameExists = false;
     public $proceedType = '';
 
@@ -34,6 +36,8 @@ class AddClientModal extends Component
         if ($this->newClientModal) {
             $rules = array_merge($rules, [
                 'clientName' => 'required|string|max:255',
+                'clientCode' => 'nullable|string|max:50',
+                'clientCountryName' => 'nullable|string|max:255',
                 'clientPhone' => 'nullable|string|max:20',
                 'clientAddress' => 'nullable|string|max:500',
                 'clientEmail' => 'nullable|email|max:255',
@@ -74,18 +78,22 @@ class AddClientModal extends Component
                 $this->clientService->updateClient(
                     $client,
                     $this->clientName,
+                    $this->clientCode,
                     $this->clientPhone,
                     $this->clientAddress,
                     $this->clientEmail,
-                    $this->clientNotes
+                    $this->clientNotes,
+                    $this->clientCountryName ?? null
                 );
             } else {
                 $this->clientService->createClient(
                     $this->clientName,
+                    $this->clientCode,
                     $this->clientPhone,
                     $this->clientAddress,
                     $this->clientEmail,
-                    $this->clientNotes
+                    $this->clientNotes,
+                    $this->clientCountryName ?? null
                 );
             }
 
@@ -107,10 +115,12 @@ class AddClientModal extends Component
     private function resetClientFormFields()
     {
         $this->clientName = '';
+        $this->clientCode = '';
         $this->clientPhone = '';
         $this->clientAddress = '';
         $this->clientEmail = '';
         $this->clientNotes = '';
+        $this->clientCountryName = '';
         $this->proceedType = '';
         $this->clientNameExists = false;
         $this->resetValidation();

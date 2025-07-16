@@ -9,6 +9,9 @@
                     <x-text-input wire:model="clientName" label="Client Name *"
                         wire:change.debounce.100ms="checkNameExists" errorMessage="{{ $errors->first('clientName') }}" />
 
+                    <x-text-input wire:model="clientCode" label="Client Code (Optional)"
+                        errorMessage="{{ $errors->first('clientCode') }}" placeholder="e.g., CLT001" />
+
                     @if($clientNameExists)
                         <div class="text-danger-500">
                             <p>Client name already exists, how to proceed?</p>

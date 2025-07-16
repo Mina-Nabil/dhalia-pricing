@@ -37,6 +37,9 @@
                             <x-text-input wire:model="clientName" label="Client Name"
                                 errorMessage="{{ $errors->first('clientName') }}" />
 
+                            <x-text-input wire:model="clientCode" label="Client Code (Optional)"
+                                errorMessage="{{ $errors->first('clientCode') }}" placeholder="e.g., CLT001" />
+
                             <x-text-input wire:model="clientPhone" label="Phone Number"
                                 errorMessage="{{ $errors->first('clientPhone') }}"
                                 placeholder="e.g., +1 234 567 8900" />
@@ -74,6 +77,13 @@
                                 class="form-label font-medium text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wide">Client
                                 Name</label>
                             <p class="text-slate-900 dark:text-white text-lg font-medium mt-1">{{ $client->name }}</p>
+                        </div>
+                        <div>
+                            <label
+                                class="form-label font-medium text-slate-600 dark:text-slate-400 text-sm uppercase tracking-wide">Client
+                                Code</label>
+                            <p class="text-slate-900 dark:text-white text-lg font-medium mt-1">
+                                {{ $client->code ?: 'Not provided' }}</p>
                         </div>
                         <div>
                             <label

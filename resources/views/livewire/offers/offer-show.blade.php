@@ -85,6 +85,34 @@
         </div>
     </x-card>
 
+    {{-- Notes Section --}}
+    @can('update-offer-notes', $offer)
+        <x-card title="Notes">
+            <div class="mb-3">
+                <x-input-label for="notes" :value="__('Notes')" />
+                <textarea wire:model="notes" id="notes" name="notes" rows="3" 
+                    class="form-control" placeholder="Enter any additional notes or comments..."></textarea>
+                @error('notes')
+                    <span class="text-danger-500 small">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="text-right">
+                <button wire:click="updateNotes" type="button" class="btn btn-primary btn-sm">
+                    <i class="fa fa-save"></i> Save Notes
+                </button>
+            </div>
+        </x-card>
+    @else
+        @if($offer->notes)
+            <x-card title="Notes">
+                <div class="mb-0">
+                    <x-input-label :value="__('Notes')" />
+                    <p class="form-control-plaintext">{{ $offer->notes }}</p>
+                </div>
+            </x-card>
+        @endif
+    @endcan
+
     {{-- Offer Items Cards --}}
     <div class="flex justify-between items-center mb-3 mt-4">
         <h4>Offer Items ({{ $offer->items->count() }})</h4>

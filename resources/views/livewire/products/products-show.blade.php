@@ -195,15 +195,6 @@
                             </form>
                         </div>
                     @endif
-
-                    <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
-                        <div class="flex justify-between items-center py-2">
-                            <span class="text-xl font-bold text-slate-900 dark:text-white">Total Cost:</span>
-                            <span class="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                                {{ number_format($product->total_cost, 2) }}EGP
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </x-card>
 
