@@ -1,6 +1,6 @@
 <div>
     {{-- Main Offer Card --}}
-    <x-card title="Create New Offer {{ $duplicate_of_code ? ' - Duplicate of ' . $duplicate_of_code : '' }}">
+    <x-card title="{{ $edit_mode ? 'Edit Offer' : 'Create New Offer' }} {{ $duplicate_of_code ? ' - Duplicate of ' . $duplicate_of_code : '' }}">
 
         <x-slot name="tools">
             <button wire:click="saveOffer" type="button" class="btn btn-primary">

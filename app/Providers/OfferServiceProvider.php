@@ -201,6 +201,76 @@ class OfferServiceProvider extends ServiceProvider
         return $offer;
     }
 
+    public function updateOffer(Offer $offer, $status, $clientId, $currencyId, $currencyRate, $offerItems, $notes = null)
+    {
+        Gate::authorize('update-offer', $offer);
+        $this->checkOfferItemsArray($offerItems);
+
+        $totalTonnage = 0;
+        $totalPrice = 0;
+        $totalBasePrice = 0;
+        $totalFreightCost = 0;
+        $totalPackingCost = 0;
+        $totalSterilizationCost = 0;
+        $totalAgentCommissionCost = 0;
+        $totalInternalCost = 0;
+        $totalCosts = 0;
+        $totalProfit = 0;
+        $profitPercentage = 0;
+
+        foreach ($offerItems as $item) {
+            $totalTonnage += ($item['quantity_in_kgs'] / 1000);
+            $totalPrice += $item['price'];
+            $totalBasePrice += $item['base_cost_currency'];
+            $totalFreightCost += $item['freight_total_cost'];
+            $totalPackingCost += $item['total_packing_cost'];
+            $totalSterilizationCost += $item['sterilization_total_cost'];
+            $totalAgentCommissionCost += $item['agent_commission_total_cost'];
+            $totalInternalCost += $item['internal_cost'];
+            $totalCosts += $item['total_costs'];
+            $totalProfit += $item['total_profit'];
+        }
+
+        $profitPercentage = ($totalProfit / $totalCosts) * 100;
+
+        $offer->update([
+            'status' => $status,
+            'client_id' => $clientId,
+            'currency_id' => $currencyId,
+            'currency_rate' => $currencyRate,
+            'total_tonnage' => $totalTonnage,
+            'total_price' => $totalPrice,
+            'total_base_price' => $totalBasePrice,
+            'total_freight_cost' => $totalFreightCost,
+            'total_packing_cost' => $totalPackingCost,
+            'total_sterilization_cost' => $totalSterilizationCost,
+            'total_agent_commission_cost' => $totalAgentCommissionCost,
+            'total_internal_cost' => $totalInternalCost,
+            'total_costs' => $totalCosts,
+            'total_profit' => $totalProfit,
+            'profit_percentage' => $profitPercentage,
+            'notes' => $notes,
+        ]);
+        try {
+            DB::transaction(function () use ($offer, $offerItems) {
+                $offer->save();
+                $offer->items()->delete();
+                $offer->items()->createMany($offerItems);
+                foreach ($offer->items as $key => $item) {
+                    if (isset($offerItems[$key]['ingredients']) && count($offerItems[$key]['ingredients']) > 0) {
+                        $item->ingredients()->createMany($offerItems[$key]['ingredients']);
+                    }
+                }
+                $offer->refresh();
+            });
+        } catch (Exception $e) {
+            report($e);
+            throw new OfferManagementException('Failed to update offer');
+        }
+
+        return $offer;
+    }
+
     public function setOfferStatus($id, $status)
     {
         $offer = $this->getOffer($id);

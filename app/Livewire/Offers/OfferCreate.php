@@ -46,6 +46,8 @@ class OfferCreate extends Component
     public $duplicate_of_id = null;
     public $duplicate_of_code = null;
 
+    public $edit_mode = false;
+
     // Offer items (dynamic array)
     public $offerItems = [];
 
@@ -99,9 +101,15 @@ class OfferCreate extends Component
         $this->duplicate_of_code = null;
     }
 
-    public function mount($duplicate_of_id = null)
+    public function mount($duplicate_of_id = null, $edit_mode = false)
     {
         $this->authorize('create-offers');
+        $offer = null;
+
+        if ($duplicate_of_id) {
+            $offer = $this->offerService->getOffer($duplicate_of_id, false);
+        }
+
         // Load dropdown data
         $this->currencies = $this->currencyService->getCurrencies(paginate: false, forDropdown: true);
         $this->products = $this->productService->getProducts(paginate: false, forDropdown: true);
@@ -112,14 +120,18 @@ class OfferCreate extends Component
         $this->statuses = Offer::STATUSES;
         $this->calcTypes = OfferItem::CALC_TYPES;
 
-        if ($duplicate_of_id) {
-            $offer = $this->offerService->getOffer($duplicate_of_id, false);
+        if ($duplicate_of_id && !$edit_mode) {
             while ($offer->duplicate_of_id) {
                 $offer = $this->offerService->getOffer($offer->duplicate_of_id, false);
             }
             $this->original_duplicate_of_id = $offer->id;
             $this->duplicate_of_id = $offer->id;
             $this->duplicate_of_code = $offer->code;
+            $this->loadFieldsFromOffer($offer);
+            
+        } elseif ($edit_mode) {
+            $this->authorize('update-offer', $offer);
+            $this->edit_mode = true;
             $this->loadFieldsFromOffer($offer);
         } else {
             // Add first offer item
@@ -325,14 +337,14 @@ class OfferCreate extends Component
         }
 
         $this->recalculateInternalCost($index);
-        
+
         if ($kgPerPackage > 0 && $quantityInTons > 0) {
             $totalPackages = ($quantityInTons * 1000) / $kgPerPackage; // Convert tons to kg
             $item['total_packing_cost'] = ($totalPackages * $onePackageCost) / $quantityInTons;
         } else {
             $item['total_packing_cost'] = 0;
         }
-        
+
         // Calculate sum of ingredients cost
         $ingredientsCost = 0;
         if (isset($item['ingredients']) && is_array($item['ingredients'])) {
@@ -347,9 +359,9 @@ class OfferCreate extends Component
         $product = $this->products->firstWhere('id', $this->offerItems[$index]['product_id']);
 
         $item['internal_cost'] = $product->calculateFinalCost($quantityInTons, $totalPackingCost, $ingredientsCost);
-        
+
         $item['raw_ton_cost'] = $ingredientsCost + $item['internal_cost'];
-        
+
         $internalCurrencyCost = $item['internal_cost'] / $this->currency_rate;
         $currencyRate = $this->currency_rate ?: 1;
         // Calculate base_cost_currency

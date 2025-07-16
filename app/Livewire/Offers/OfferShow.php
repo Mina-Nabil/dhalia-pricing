@@ -131,6 +131,21 @@ class OfferShow extends Component
         }
     }
 
+    public function editOffer()
+    {
+        try {
+            $this->authorize('update-offer', $this->offer);
+            
+            return redirect()->route('offers.edit', ['duplicate_of_id' => $this->offer->id, 'edit_mode' => true]);
+            
+        } catch (AuthorizationException $e) {
+            $this->alert('error', 'You are not authorized to create offers.');
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Failed to duplicate offer: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         return view('livewire.offers.offer-show');
