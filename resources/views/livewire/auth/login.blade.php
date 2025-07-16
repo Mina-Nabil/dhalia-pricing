@@ -19,8 +19,8 @@
                         </div>
                     </div>
                     <!-- BEGIN: Login Form -->
-                    <form class="space-y-4">
-                        @csrf
+                    <div class="space-y-4">
+
                         <div class="formGroup">
                             <!-- Typo corrected from "fromGroup" to "formGroup" -->
                             <label class="block capitalize form-label">Username</label>
@@ -72,7 +72,7 @@
                        
                         </div>
                         <button class="btn btn-dark block w-full text-center" wire:click="checkUser">Login</button>
-                    </form>
+                    </div>
                     <!-- END: Login Form -->
                 </div>
                 <div class="auth-footer text-center">
