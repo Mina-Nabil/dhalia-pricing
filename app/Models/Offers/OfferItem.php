@@ -78,7 +78,8 @@ class OfferItem extends Model
         'ingredients_cost',
         'raw_ton_cost',
         'price', //final price per ton
-        'total_price' //total price for the item
+        'total_price', //total price for the item
+        'extra_costs',
     ];
 
     public function offer(): BelongsTo
@@ -99,5 +100,10 @@ class OfferItem extends Model
     public function ingredients(): HasMany
     {
         return $this->hasMany(OfferItemIngredient::class);
+    }
+
+    public function extraCosts(): HasMany
+    {
+        return $this->hasMany(ExtraCost::class);
     }
 }

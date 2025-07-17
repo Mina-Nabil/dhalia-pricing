@@ -35,6 +35,13 @@ class ProductsShow extends Component
     public $isFixed = false;
     public $costType = 'per_ton'; // 'per_ton', 'percentage', 'fixed'
 
+    // Edit cost properties
+    public $showEditCostModal = false;
+    public $editingCostId = null;
+    public $editCostName = '';
+    public $editCostAmount = '';
+    public $editCostType = 'per_ton';
+
     // Ingredient form properties
     public $ingredientName = '';
     public $ingredientCost = '';
@@ -217,6 +224,67 @@ class ProductsShow extends Component
     {
         $this->addCostMode = false;
         $this->resetCostFormFields();
+        $this->resetValidation();
+    }
+
+    public function openEditCostModal($costId)
+    {
+        $cost = ProductCost::findOrFail($costId);
+        $this->editingCostId = $cost->id;
+        $this->editCostName = $cost->name;
+        $this->editCostAmount = $cost->cost;
+        
+        // Set the cost type based on the cost properties
+        if ($cost->is_percentage) {
+            $this->editCostType = 'percentage';
+        } elseif ($cost->is_fixed) {
+            $this->editCostType = 'fixed';
+        } else {
+            $this->editCostType = 'per_ton';
+        }
+        
+        $this->showEditCostModal = true;
+    }
+
+    public function updateProductCost()
+    {
+        $this->validate([
+            'editCostName' => 'required|string|max:255',
+            'editCostAmount' => 'required|numeric|min:0|regex:/^\d+(\.\d{1,2})?$/',
+            'editCostType' => 'required|in:per_ton,percentage,fixed',
+        ]);
+
+        try {
+            $productCost = ProductCost::findOrFail($this->editingCostId);
+            
+            // Set boolean values based on cost type
+            $isPercentage = ($this->editCostType === 'percentage');
+            $isFixed = ($this->editCostType === 'fixed');
+            
+            $this->productService->updateProductCost($productCost, $this->editCostName, $this->editCostAmount, $isPercentage, $isFixed);
+
+            // Refresh the product data
+            $this->product = $this->productService->getProduct($this->product->id);
+
+            $this->closeEditCostModal();
+            $this->alert('success', 'Cost updated successfully');
+        } catch (ProductManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'An unexpected error occurred');
+        }
+    }
+
+    public function closeEditCostModal()
+    {
+        $this->showEditCostModal = false;
+        $this->editingCostId = null;
+        $this->editCostName = '';
+        $this->editCostAmount = '';
+        $this->editCostType = 'per_ton';
         $this->resetValidation();
     }
 

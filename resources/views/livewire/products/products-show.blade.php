@@ -109,6 +109,13 @@
                                     </div>
                                     <div
                                         class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <!-- Edit Button -->
+                                        <button wire:click="openEditCostModal({{ $cost->id }})"
+                                            class="action-btn text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400"
+                                            title="Edit Cost">
+                                            <iconify-icon icon="heroicons:pencil-square" class="text-sm"></iconify-icon>
+                                        </button>
+
                                         <!-- Move Up Button -->
                                         @if ($index > 0)
                                             <button wire:click="moveProductCostUp({{ $cost->id }})"
@@ -351,4 +358,63 @@
             </x-card>
         </div>
     </div>
+
+    <!-- Edit Cost Modal -->
+    <x-modal wire:model="showEditCostModal">
+        <x-slot name="title">
+            Edit Cost
+        </x-slot>
+        <x-slot name="content">
+            <form wire:submit.prevent="updateProductCost">
+                <div class="space-y-4">
+                    <x-text-input wire:model="editCostName" label="Cost Name"
+                        errorMessage="{{ $errors->first('editCostName') }}"
+                        placeholder="e.g., Shipping, Tax, etc." />
+
+                    <x-text-input wire:model="editCostAmount" label="Cost Amount" type="number"
+                        step="0.01" errorMessage="{{ $errors->first('editCostAmount') }}"
+                        placeholder="100.00" />
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-medium text-slate-600 dark:text-slate-400">
+                            Cost Type:
+                        </label>
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="radio" wire:model="editCostType" value="per_ton" id="edit_per_ton"
+                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                <label for="edit_per_ton" class="text-sm text-slate-600 dark:text-slate-400">
+                                    Per Ton
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="radio" wire:model="editCostType" value="percentage" id="edit_percentage"
+                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                <label for="edit_percentage" class="text-sm text-slate-600 dark:text-slate-400">
+                                    Percentage
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="radio" wire:model="editCostType" value="fixed" id="edit_fixed"
+                                    class="form-radio h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                <label for="edit_fixed" class="text-sm text-slate-600 dark:text-slate-400">
+                                    Fixed Cost
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <div class="flex space-x-3">
+                <x-primary-button wire:click="updateProductCost" loadingFunction="updateProductCost">
+                    Update Cost
+                </x-primary-button>
+                <x-secondary-button wire:click="closeEditCostModal" type="button">
+                    Cancel
+                </x-secondary-button>
+            </div>
+        </x-slot>
+    </x-modal>
 </div>

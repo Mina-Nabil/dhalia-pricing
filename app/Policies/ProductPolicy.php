@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Products\Product;
+use App\Models\Products\ProductCategory;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -62,6 +63,16 @@ class ProductPolicy
     public function restore(User $user, Product $product): bool
     {
         return false;
+    }
+
+    public function updateCategory(User $user, ProductCategory $category): bool
+    {
+        return $user->is_admin;
+    }
+
+    public function deleteCategory(User $user, ProductCategory $category): bool
+    {
+        return $user->is_admin;
     }
 
 }

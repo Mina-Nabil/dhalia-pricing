@@ -199,6 +199,22 @@ class ProductServiceProvider extends ServiceProvider
         }
     }
 
+    public function updateProductCost(ProductCost $productCost, $name, $cost, $isPercentage, $isFixed)
+    {
+        Gate::authorize('update-product', $productCost->product);
+        if($isFixed && $isPercentage) {
+            throw new ProductManagementException('Product cost cannot be both fixed and percentage');
+        }
+        try {
+            $productCost->update(['name' => $name, 'cost' => $cost, 'is_percentage' => $isPercentage, 'is_fixed' => $isFixed]);
+            AppLog::info('Product cost updated', 'Product cost ' . $productCost->name . ' updated', $productCost);
+        } catch (Exception $e) {
+            report($e);
+            AppLog::error('Product cost update failed', 'Product cost ' . $productCost->name . ' update failed');
+            throw new ProductManagementException('Product cost update failed');
+        }
+    }
+
     public function deleteProductCost(ProductCost $productCost)
     {
         Gate::authorize('update-product', $productCost->product);
@@ -776,5 +792,7 @@ class ProductServiceProvider extends ServiceProvider
         Gate::define('create-product', [ProductPolicy::class, 'create']);
         Gate::define('update-product', [ProductPolicy::class, 'update']);
         Gate::define('delete-product', [ProductPolicy::class, 'delete']);
+        Gate::define('update-category', [ProductPolicy::class, 'updateCategory']);
+        Gate::define('delete-category', [ProductPolicy::class, 'deleteCategory']);
     }
 }

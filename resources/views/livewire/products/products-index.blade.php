@@ -11,8 +11,10 @@
                 <button wire:click="exportProducts"
                     class="btn inline-flex justify-center btn-success dark:bg-green-600 dark:text-slate-300 m-1"
                     wire:loading.attr="disabled" wire:target="exportProducts">
-                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:download-bold" wire:loading.remove wire:target="exportProducts"></iconify-icon>
-                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading wire:target="exportProducts"></iconify-icon>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:download-bold" wire:loading.remove
+                        wire:target="exportProducts"></iconify-icon>
+                    <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading
+                        wire:target="exportProducts"></iconify-icon>
                     <span wire:loading.remove wire:target="exportProducts">Export Products</span>
                     <span wire:loading wire:target="exportProducts">Exporting...</span>
                 </button>
@@ -25,12 +27,14 @@
                         <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:upload-bold"></iconify-icon>
                         Import Products
                     </button>
-                    @if($importFile)
+                    @if ($importFile)
                         <button wire:click="importProducts"
                             class="btn inline-flex justify-center btn-info dark:bg-blue-600 dark:text-slate-300 m-1"
                             wire:loading.attr="disabled" wire:target="importProducts">
-                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:check-bold" wire:loading.remove wire:target="importProducts"></iconify-icon>
-                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading wire:target="importProducts"></iconify-icon>
+                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2" icon="ph:check-bold" wire:loading.remove
+                                wire:target="importProducts"></iconify-icon>
+                            <iconify-icon class="text-xl ltr:mr-2 rtl:ml-2 animate-spin" icon="ph:spinner-bold" wire:loading
+                                wire:target="importProducts"></iconify-icon>
                             <span wire:loading.remove wire:target="importProducts">Import Products</span>
                             <span wire:loading wire:target="importProducts">Importing...</span>
                         </button>
@@ -51,7 +55,7 @@
     </div>
 
     <!-- Import File Information -->
-    @if($importFile)
+    @if ($importFile)
         <div class="mb-4">
             <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
                 <div class="flex items-center">
@@ -99,7 +103,8 @@
                 <div class="overflow-x-auto -mx-6">
                     <div class="inline-block align-middle" style="min-width: 100%;">
                         <div class="overflow-hidden">
-                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 400px; table-layout: auto;">
+                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700"
+                                style="min-width: 400px; table-layout: auto;">
                                 <thead class="bg-slate-200 dark:bg-slate-700">
                                     <tr>
                                         <th scope="col" class="table-th whitespace-nowrap">Name</th>
@@ -117,20 +122,25 @@
                                             <td class="table-td whitespace-nowrap">{{ $category->products_count }}</td>
                                             <td class="table-td whitespace-nowrap">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
-                                                    <button wire:click="openEditCategorySec({{ $category->id }})"
-                                                        class="action-btn text-primary">
-                                                        <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
-                                                    </button>
-                                                    <button wire:click="confirmDeleteCategory({{ $category->id }})"
-                                                        class="action-btn text-danger">
-                                                        <iconify-icon icon="heroicons:trash"></iconify-icon>
-                                                    </button>
+                                                    @can('update-category', $category)
+                                                        <button wire:click="openEditCategorySec({{ $category->id }})"
+                                                            class="action-btn text-primary">
+                                                            <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete-category', $category)
+                                                        <button wire:click="confirmDeleteCategory({{ $category->id }})"
+                                                            class="action-btn text-danger">
+                                                            <iconify-icon icon="heroicons:trash"></iconify-icon>
+                                                        </button>
+                                                    @endcan
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="table-td text-center whitespace-nowrap">No categories found</td>
+                                            <td colspan="3" class="table-td text-center whitespace-nowrap">No
+                                                categories found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -150,7 +160,8 @@
                 <div class="overflow-x-auto -mx-6">
                     <div class="inline-block align-middle" style="min-width: 100%;">
                         <div class="overflow-hidden">
-                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700" style="min-width: 700px; table-layout: auto;">
+                            <table class="w-full divide-y divide-slate-100 dark:divide-slate-700"
+                                style="min-width: 700px; table-layout: auto;">
                                 <thead class="bg-slate-200 dark:bg-slate-700">
                                     <tr>
                                         <th scope="col" class="table-th whitespace-nowrap">Name</th>
@@ -166,37 +177,48 @@
                                     class="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
                                     @forelse($products as $product)
                                         <tr>
-                                            <td class="table-td whitespace-nowrap hover:cursor-pointer hover:underline" wire:click="goToProductShow({{ $product->id }})">{{ $product->name }}</td>
+                                            <td class="table-td whitespace-nowrap hover:cursor-pointer hover:underline"
+                                                wire:click="goToProductShow({{ $product->id }})">{{ $product->name }}
+                                            </td>
                                             <td class="table-td whitespace-nowrap">{{ $product->category->name }}</td>
                                             <td class="table-td whitespace-nowrap">{{ $product->spec->name }}</td>
                                             @can('view-product-costs')
-                                                <td class="table-td whitespace-nowrap">{{ number_format($product->base_cost, 2) }}</td>
+                                                <td class="table-td whitespace-nowrap">
+                                                    {{ number_format($product->base_cost, 2) }}</td>
                                             @endcan
                                             <td class="table-td whitespace-nowrap">
                                                 <div class="flex space-x-3 rtl:space-x-reverse">
-                                                    <button wire:click="goToProductShow({{ $product->id }})"
-                                                        class="action-btn text-primary">
-                                                        <iconify-icon icon="heroicons:eye"></iconify-icon>
-                                                    </button>
-                                                    <button wire:click="updateThisProduct({{ $product->id }})"
-                                                        class="action-btn text-primary">
-                                                        <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
-                                                    </button>
-                                                    <button wire:click="$dispatch('showConfirmationModal', {
+                                                    @can('update-product', $product)
+                                                        <button wire:click="goToProductShow({{ $product->id }})"
+                                                            class="action-btn text-primary">
+                                                            <iconify-icon icon="heroicons:eye"></iconify-icon>
+                                                        </button>
+
+                                                        <button wire:click="updateThisProduct({{ $product->id }})"
+                                                            class="action-btn text-primary">
+                                                            <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
+                                                        </button>
+                                                    @endcan
+
+                                                    @can('delete-product', $product)
+                                                        <button
+                                                            wire:click="$dispatch('showConfirmationModal', {
                                                         title: 'Delete Product',
                                                         message: 'Are you sure you want to delete this product?',
                                                         callback: 'deleteProduct',
                                                         params: {{ $product->id }}
                                                     })"
-                                                        class="action-btn text-danger">
-                                                        <iconify-icon icon="heroicons:trash"></iconify-icon>
-                                                    </button>
+                                                            class="action-btn text-danger">
+                                                            <iconify-icon icon="heroicons:trash"></iconify-icon>
+                                                        </button>
+                                                    @endcan
                                                 </div>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="table-td text-center whitespace-nowrap">No products found</td>
+                                            <td colspan="5" class="table-td text-center whitespace-nowrap">No
+                                                products found</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -218,18 +240,17 @@
                 Create New Category
             </x-slot>
             <x-slot name="content">
-                <x-text-input wire:model="categoryName" label="Category Name" 
+                <x-text-input wire:model="categoryName" label="Category Name"
                     errorMessage="{{ $errors->first('categoryName') }}" />
-                
-                                 <div class="form-group">
-                     <label for="categoryDescription" class="form-label">Description (Optional)</label>
-                     <textarea id="categoryDescription" 
-                         class="form-control @error('categoryDescription') !border-danger-500 @enderror"
-                         wire:model="categoryDescription" rows="3"></textarea>
-                     @error('categoryDescription')
-                         <span class="font-Inter text-sm text-danger-500 pt-2 inline-block">{{ $message }}</span>
-                     @enderror
-                 </div>
+
+                <div class="form-group">
+                    <label for="categoryDescription" class="form-label">Description (Optional)</label>
+                    <textarea id="categoryDescription" class="form-control @error('categoryDescription') !border-danger-500 @enderror"
+                        wire:model="categoryDescription" rows="3"></textarea>
+                    @error('categoryDescription')
+                        <span class="font-Inter text-sm text-danger-500 pt-2 inline-block">{{ $message }}</span>
+                    @enderror
+                </div>
             </x-slot>
             <x-slot name="footer">
                 <x-primary-button wire:click.prevent="addNewCategory" loadingFunction="addNewCategory">
@@ -246,13 +267,12 @@
                 Edit Category
             </x-slot>
             <x-slot name="content">
-                <x-text-input wire:model="categoryName" label="Category Name" 
+                <x-text-input wire:model="categoryName" label="Category Name"
                     errorMessage="{{ $errors->first('categoryName') }}" />
-                
+
                 <div class="form-group">
                     <label for="categoryDescription" class="form-label">Description (Optional)</label>
-                    <textarea id="categoryDescription" 
-                        class="form-control @error('categoryDescription') !border-danger-500 @enderror"
+                    <textarea id="categoryDescription" class="form-control @error('categoryDescription') !border-danger-500 @enderror"
                         wire:model="categoryDescription" rows="3"></textarea>
                     @error('categoryDescription')
                         <span class="font-Inter text-sm text-danger-500 pt-2 inline-block">{{ $message }}</span>
@@ -274,10 +294,10 @@
                 Create New Product
             </x-slot>
             <x-slot name="content">
-                <x-text-input wire:model="productName" label="Product Name" 
+                <x-text-input wire:model="productName" label="Product Name"
                     errorMessage="{{ $errors->first('productName') }}" />
-                
-                <x-select wire:model="selectedCategoryId" label="Category" 
+
+                <x-select wire:model="selectedCategoryId" label="Category"
                     errorMessage="{{ $errors->first('selectedCategoryId') }}">
                     <option value="">Select a category</option>
                     @foreach ($allCategories as $category)
@@ -285,7 +305,7 @@
                     @endforeach
                 </x-select>
 
-                <x-select wire:model="selectedSpecId" label="Spec" 
+                <x-select wire:model="selectedSpecId" label="Spec"
                     errorMessage="{{ $errors->first('selectedSpecId') }}">
                     <option value="">Select a spec</option>
                     @foreach ($allSpecs as $spec)
@@ -293,7 +313,7 @@
                     @endforeach
                 </x-select>
 
-                <x-text-input wire:model="baseCost" label="Base Cost" type="number" step="0.01" 
+                <x-text-input wire:model="baseCost" label="Base Cost" type="number" step="0.01"
                     errorMessage="{{ $errors->first('baseCost') }}" placeholder="e.g., 100.00" />
             </x-slot>
             <x-slot name="footer">
@@ -311,10 +331,10 @@
                 Edit Product
             </x-slot>
             <x-slot name="content">
-                <x-text-input wire:model="productName" label="Product Name" 
+                <x-text-input wire:model="productName" label="Product Name"
                     errorMessage="{{ $errors->first('productName') }}" />
-                
-                <x-select wire:model="selectedCategoryId" label="Category" 
+
+                <x-select wire:model="selectedCategoryId" label="Category"
                     errorMessage="{{ $errors->first('selectedCategoryId') }}">
                     <option value="">Select a category</option>
                     @foreach ($allCategories as $category)
@@ -322,7 +342,7 @@
                     @endforeach
                 </x-select>
 
-                <x-select wire:model="selectedSpecId" label="Spec" 
+                <x-select wire:model="selectedSpecId" label="Spec"
                     errorMessage="{{ $errors->first('selectedSpecId') }}">
                     <option value="">Select a spec</option>
                     @foreach ($allSpecs as $spec)
@@ -330,7 +350,7 @@
                     @endforeach
                 </x-select>
 
-                <x-text-input wire:model="baseCost" label="Base Cost" type="number" step="0.01" 
+                <x-text-input wire:model="baseCost" label="Base Cost" type="number" step="0.01"
                     errorMessage="{{ $errors->first('baseCost') }}" placeholder="e.g., 100.00" />
             </x-slot>
             <x-slot name="footer">
@@ -351,7 +371,8 @@
                 <p>Are you sure you want to delete this {{ $itemTypeToDelete }}? This action cannot be undone.</p>
 
                 @if ($itemTypeToDelete === 'category')
-                    <p class="text-danger-500">Warning: If this category has associated products, it cannot be deleted.</p>
+                    <p class="text-danger-500">Warning: If this category has associated products, it cannot be deleted.
+                    </p>
                 @endif
 
                 @if ($itemTypeToDelete === 'product')

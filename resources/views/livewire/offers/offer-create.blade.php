@@ -1,6 +1,7 @@
 <div>
     {{-- Main Offer Card --}}
-    <x-card title="{{ $edit_mode ? 'Edit Offer' : 'Create New Offer' }} {{ $duplicate_of_code ? ' - Duplicate of ' . $duplicate_of_code : '' }}">
+    <x-card
+        title="{{ $edit_mode ? 'Edit Offer' : 'Create New Offer' }} {{ $duplicate_of_code ? ' - Duplicate of ' . $duplicate_of_code : '' }}">
 
         <x-slot name="tools">
             <button wire:click="saveOffer" type="button" class="btn btn-primary">
@@ -288,13 +289,19 @@
                 {{-- Right Column: Additional Costs & Summary --}}
                 <div class="lg:col-span-1">
                     <div class="border border-yellow-200 rounded-lg p-4 h-full bg-yellow-50">
-                        <h6 class="text-yellow-600 mb-3 font-semibold"><i class="fa fa-calculator"></i> Costs &
-                            Summary</h6>
+                        <div class="flex justify-between items-center mb-3">
+                            <h6 class="text-yellow-600 font-semibold"><i class="fa fa-calculator"></i> Costs &
+                                Summary</h6>
+                            <button wire:click="addExtraCost({{ $index }})" type="button"
+                                class="btn btn-xs btn-outline-primary">
+                                <i class="fa fa-plus"></i> Add Cost
+                            </button>
+                        </div>
 
                         {{-- Freight --}}
                         <div class="mb-2">
                             <small class="text-muted">Freight</small>
-                            <div class="grid grid-cols-3 gap-1">
+                            <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <x-text-input wire:model="offerItems.{{ $index }}.freight_cost"
                                         wire:change="recalculate({{ $index }})" placeholder="Cost"
@@ -327,7 +334,7 @@
                         {{-- Sterilization --}}
                         <div class="mb-2">
                             <small class="text-muted">Sterilization</small>
-                            <div class="grid grid-cols-3 gap-1">
+                            <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <x-text-input wire:model="offerItems.{{ $index }}.sterilization_cost"
                                         wire:change="recalculate({{ $index }})" placeholder="Cost"
@@ -361,7 +368,7 @@
                         {{-- Agent Commission --}}
                         <div class="mb-3">
                             <small class="text-muted">Agent Commission</small>
-                            <div class="grid grid-cols-3 gap-1">
+                            <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <x-text-input wire:model="offerItems.{{ $index }}.agent_commission_cost"
                                         wire:change="recalculate({{ $index }})" placeholder="Cost"
@@ -391,6 +398,56 @@
                                 @endcan
                             </div>
                         </div>
+
+                        {{-- Extra Costs --}}
+                        @if (isset($item['extra_costs']) && count($item['extra_costs']) > 0)
+                            @foreach ($item['extra_costs'] as $extraCostIndex => $extraCost)
+                                <div class="mb-2">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="flex-1 mr-2">
+                                            <x-text-input
+                                                wire:model="offerItems.{{ $index }}.extra_costs.{{ $extraCostIndex }}.name"
+                                                placeholder="Cost Name" class="form-control form-control-sm w-full"
+                                                errorMessage="{{ $errors->first('offerItems.' . $index . '.extra_costs.' . $extraCostIndex . '.name') }}" />
+                                        </div>
+                                        <button
+                                            wire:click="removeExtraCost({{ $index }}, {{ $extraCostIndex }})"
+                                            type="button" class="btn btn-xs btn-outline-danger">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <x-text-input
+                                                wire:model="offerItems.{{ $index }}.extra_costs.{{ $extraCostIndex }}.cost"
+                                                wire:change="recalculate({{ $index }})" placeholder="Cost"
+                                                type="number" step="0.01" min="0"
+                                                class="form-control form-control-sm w-full"
+                                                errorMessage="{{ $errors->first('offerItems.' . $index . '.extra_costs.' . $extraCostIndex . '.cost') }}" />
+                                        </div>
+                                        <div>
+                                            <x-select
+                                                wire:model="offerItems.{{ $index }}.extra_costs.{{ $extraCostIndex }}.cost_type"
+                                                wire:change="recalculate({{ $index }})"
+                                                class="form-control form-control-sm w-full"
+                                                errorMessage="{{ $errors->first('offerItems.' . $index . '.extra_costs.' . $extraCostIndex . '.cost_type') }}">
+                                                @foreach ($calcTypes as $type)
+                                                    <option value="{{ $type }}">
+                                                        {{ ucfirst(str_replace('_', ' ', $type)) }}</option>
+                                                @endforeach
+                                            </x-select>
+                                        </div>
+                                        @can('view-product-costs')
+                                            <div>
+                                                <x-text-input
+                                                    value="{{ number_format($extraCost['total_cost'] ?? 0, 2) }}"
+                                                    readonly class="form-control form-control-sm bg-light w-full" />
+                                            </div>
+                                        @endcan
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
 
                         {{-- Summary --}}
                         <div class="border-t pt-2">

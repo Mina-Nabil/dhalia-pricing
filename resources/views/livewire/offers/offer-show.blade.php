@@ -4,7 +4,7 @@
 
         <x-slot name="tools">
             <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                @can('update-offer', $offer)
+                @can('update-offer-status', $offer)
                     <div class="flex items-center gap-2">
                         <select wire:change="updateOfferStatus($event.target.value)"
                             class="btn btn-outline-primary btn-sm w-full sm:w-auto"
@@ -103,33 +103,102 @@
         </div>
     </x-card>
 
-    {{-- Notes Section --}}
-    @can('update-offer-notes', $offer)
-        <x-card title="Notes">
-            <div class="mb-3">
-                <x-input-label for="notes" :value="__('Notes')" />
-                <textarea wire:model="notes" id="notes" name="notes" rows="3" class="form-control"
-                    placeholder="Enter any additional notes or comments..."></textarea>
-                @error('notes')
-                    <span class="text-danger-500 small">{{ $message }}</span>
-                @enderror
-            </div>
-            <div class="text-right">
-                <button wire:click="updateNotes" type="button" class="btn btn-primary btn-sm">
-                    <i class="fa fa-save"></i> Save Notes
-                </button>
-            </div>
-        </x-card>
-    @else
-        @if ($offer->notes)
-            <x-card title="Notes">
-                <div class="mb-0">
-                    <x-input-label :value="__('Notes')" />
-                    <p class="form-control-plaintext">{{ $offer->notes }}</p>
-                </div>
-            </x-card>
-        @endif
-    @endcan
+    {{-- Notes and Comments Section --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {{-- Notes Card --}}
+        <div>
+            @can('update-offer-notes', $offer)
+                <x-card title="Notes">
+                    <div class="mb-3">
+                        <x-input-label for="notes" :value="__('Notes')" />
+                        <textarea wire:model="notes" id="notes" name="notes" rows="3" class="form-control"
+                            placeholder="Enter any additional notes"></textarea>
+                        @error('notes')
+                            <span class="text-danger-500 small">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="text-right">
+                        <button wire:click="updateNotes" type="button" class="btn btn-primary btn-sm">
+                            <i class="fa fa-save"></i> Save Notes
+                        </button>
+                    </div>
+                </x-card>
+            @else
+                @if ($offer->notes)
+                    <x-card title="Notes">
+                        <div class="mb-0">
+                            <x-input-label :value="__('Notes')" />
+                            <p class="form-control-plaintext">{{ $offer->notes }}</p>
+                        </div>
+                    </x-card>
+                @endif
+            @endcan
+        </div>
+
+        {{-- Comments Card --}}
+        <div>
+            @can('add-offer-comment', $offer)
+                <x-card title="Offer Comments">
+                    {{-- Add Comment Form --}}
+                    <div class="mb-3">
+                        <x-input-label for="newComment" :value="__('Add Comment')" />
+                        <textarea wire:model="newComment" id="newComment" name="newComment" rows="2" class="form-control"
+                            placeholder="Enter your comment..."></textarea>
+                        @error('newComment')
+                            <span class="text-danger-500 small">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="text-right mb-3">
+                        <button wire:click="addComment" type="button" class="btn btn-primary btn-sm">
+                            <i class="fa fa-comment"></i> Add Comment
+                        </button>
+                    </div>
+                    
+                    {{-- Comments List --}}
+                    <div class="border-t pt-3">
+                        <h6 class="text-gray-600 mb-2">Recent Comments</h6>
+                        <div style="height: 180px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem; background-color: #f9fafb;">
+                            @if ($offer->comments && $offer->comments->count() > 0)
+                                @foreach ($offer->comments->take(50)->sortByDesc('created_at') as $comment)
+                                    <div style="border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem; background-color: white;">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fa fa-user text-blue-500 text-xs"></i>
+                                                <span class="font-semibold text-xs">{{ $comment->user->name ?? 'Unknown User' }}</span>
+                                            </div>
+                                            <small class="text-gray-500 text-xs">{{ $comment->created_at->format('M d, Y H:i') }}</small>
+                                        </div>
+                                        <p class="text-xs text-gray-700 mb-0 leading-relaxed">{{ $comment->comment }}</p>
+                                    </div>
+                                @endforeach
+                            @else
+                                <p class="text-gray-500 text-sm text-center py-4">No comments yet</p>
+                            @endif
+                        </div>
+                    </div>
+                </x-card>
+            @else
+                @if ($offer->comments && $offer->comments->count() > 0)
+                    <x-card title="Offer Comments">
+                        <div style="height: 180px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem; background-color: #f9fafb;">
+                            @foreach ($offer->comments->take(50)->sortByDesc('created_at') as $comment)
+                                <div style="border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem; background-color: white;">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa fa-user text-blue-500 text-xs"></i>
+                                            <span class="font-semibold text-xs">{{ $comment->user->name ?? 'Unknown User' }}</span>
+                                        </div>
+                                        <small class="text-gray-500 text-xs">{{ $comment->created_at->format('M d, Y H:i') }}</small>
+                                    </div>
+                                    <p class="text-xs text-gray-700 mb-0 leading-relaxed">{{ $comment->comment }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    </x-card>
+                @endif
+            @endcan
+        </div>
+    </div>
 
     {{-- Offer Items Cards --}}
     <div class="flex justify-between items-center mb-3 mt-4">
@@ -361,6 +430,33 @@
                                 @endcan
                             </div>
                         </div>
+
+                        {{-- Extra Costs --}}
+                        @if ($item->extraCosts && $item->extraCosts->count() > 0)
+                            @foreach ($item->extraCosts as $extraCost)
+                                <div class="mb-2">
+                                    <small class="text-muted font-semibold">{{ $extraCost->name }}</small>
+                                    <div class="grid grid-cols-3 gap-1 text-sm">
+                                        <div>
+                                            <small class="text-muted">Cost:</small>
+                                            <p>{{ number_format($extraCost->cost ?? 0, 2) }}</p>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted">Type:</small>
+                                            <p>{{ ucfirst(str_replace('_', ' ', $extraCost->cost_type ?? 'fixed')) }}</p>
+                                        </div>
+                                        @can('view-product-costs')
+                                            <div>
+                                                <small class="text-muted">Total:</small>
+                                                <p class="font-bold">
+                                                    {{ number_format($extraCost->total_cost ?? 0, 2) }}
+                                                    {{ $offer->currency->code ?? 'N/A' }}</p>
+                                            </div>
+                                        @endcan
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
 
                         {{-- Summary --}}
                         <div class="border-t pt-2">

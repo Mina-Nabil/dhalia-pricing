@@ -47,6 +47,7 @@ class OfferCreate extends Component
     public $duplicate_of_code = null;
 
     public $edit_mode = false;
+    public $offer = null;
 
     // Offer items (dynamic array)
     public $offerItems = [];
@@ -104,10 +105,9 @@ class OfferCreate extends Component
     public function mount($duplicate_of_id = null, $edit_mode = false)
     {
         $this->authorize('create-offers');
-        $offer = null;
 
         if ($duplicate_of_id) {
-            $offer = $this->offerService->getOffer($duplicate_of_id, false);
+            $this->offer = $this->offerService->getOffer($duplicate_of_id, false);
         }
 
         // Load dropdown data
@@ -121,18 +121,17 @@ class OfferCreate extends Component
         $this->calcTypes = OfferItem::CALC_TYPES;
 
         if ($duplicate_of_id && !$edit_mode) {
-            while ($offer->duplicate_of_id) {
-                $offer = $this->offerService->getOffer($offer->duplicate_of_id, false);
+            while ($this->offer->duplicate_of_id) {
+                $this->offer = $this->offerService->getOffer($this->offer->duplicate_of_id, false);
             }
-            $this->original_duplicate_of_id = $offer->id;
-            $this->duplicate_of_id = $offer->id;
-            $this->duplicate_of_code = $offer->code;
-            $this->loadFieldsFromOffer($offer);
-            
+            $this->original_duplicate_of_id = $this->offer->id;
+            $this->duplicate_of_id = $this->offer->id;
+            $this->duplicate_of_code = $this->offer->code;
+            $this->loadFieldsFromOffer($this->offer);
         } elseif ($edit_mode) {
-            $this->authorize('update-offer', $offer);
+            $this->authorize('update-offer', $this->offer);
             $this->edit_mode = true;
-            $this->loadFieldsFromOffer($offer);
+            $this->loadFieldsFromOffer($this->offer);
         } else {
             // Add first offer item
             $this->addOfferItem();
@@ -185,6 +184,7 @@ class OfferCreate extends Component
             'total_profit' => 0, // auto-calculated
             'price' => 0, // auto-calculated
             'ingredients' => [], // dynamic ingredients array
+            'extra_costs' => [], // dynamic extra costs array
         ];
     }
 
@@ -243,6 +243,23 @@ class OfferCreate extends Component
     {
         unset($this->offerItems[$itemIndex]['ingredients'][$ingredientIndex]);
         $this->offerItems[$itemIndex]['ingredients'] = array_values($this->offerItems[$itemIndex]['ingredients']);
+        $this->recalculateOfferItem($itemIndex);
+    }
+
+    public function addExtraCost($itemIndex)
+    {
+        $this->offerItems[$itemIndex]['extra_costs'][] = [
+            'name' => 'Extra Cost ' . (count($this->offerItems[$itemIndex]['extra_costs']) + 1),
+            'cost' => 0,
+            'cost_type' => OfferItem::CALC_TYPE_FIXED,
+            'total_cost' => 0,
+        ];
+    }
+
+    public function removeExtraCost($itemIndex, $extraCostIndex)
+    {
+        unset($this->offerItems[$itemIndex]['extra_costs'][$extraCostIndex]);
+        $this->offerItems[$itemIndex]['extra_costs'] = array_values($this->offerItems[$itemIndex]['extra_costs']);
         $this->recalculateOfferItem($itemIndex);
     }
 
@@ -403,17 +420,31 @@ class OfferCreate extends Component
             $item['fob_price']
         );
 
+        // Calculate extra costs
+        $extraCostsTotal = 0;
+        if (isset($item['extra_costs']) && is_array($item['extra_costs'])) {
+            foreach ($item['extra_costs'] as &$extraCost) {
+                $this->calculateExtraCostByType(
+                    $extraCost,
+                    $quantityInTons,
+                    $item['fob_price']
+                );
+                $extraCostsTotal += $extraCost['total_cost'] ?? 0;
+            }
+        }
 
         // Calculate total costs
         $item['total_costs'] = $baseCostCurrency +
             ($item['freight_total_cost'] ?? 0) +
             ($item['sterilization_total_cost'] ?? 0) +
-            ($item['agent_commission_total_cost'] ?? 0);
+            ($item['agent_commission_total_cost'] ?? 0) +
+            $extraCostsTotal;
 
         // Set price FOB + total costs
         $item['price'] = ($item['fob_price'] ?? 0) + ($item['freight_total_cost'] ?? 0) +
             ($item['sterilization_total_cost'] ?? 0) +
-            ($item['agent_commission_total_cost'] ?? 0);
+            ($item['agent_commission_total_cost'] ?? 0) +
+            $extraCostsTotal;
 
         // Calculate total profit
         $item['total_profit'] = ($item['price'] ?? 0) - ($item['total_costs'] ?? 0);
@@ -439,6 +470,27 @@ class OfferCreate extends Component
                 break;
             default:
                 $item[$totalField] = $cost;
+                break;
+        }
+    }
+
+    private function calculateExtraCostByType(&$extraCost, $quantityInTons, $fobPrice)
+    {
+        $cost = $extraCost['cost'] ?? 0;
+        $type = $extraCost['cost_type'] ?? OfferItem::CALC_TYPE_FIXED;
+
+        switch ($type) {
+            case OfferItem::CALC_TYPE_FIXED:
+                $extraCost['total_cost'] = $quantityInTons > 0 ? $cost / $quantityInTons : 0;
+                break;
+            case OfferItem::CALC_TYPE_PER_TON:
+                $extraCost['total_cost'] = $cost;
+                break;
+            case OfferItem::CALC_TYPE_PERCENTAGE:
+                $extraCost['total_cost'] = ($cost / 100) * $fobPrice;
+                break;
+            default:
+                $extraCost['total_cost'] = $cost;
                 break;
         }
     }
@@ -501,6 +553,14 @@ class OfferCreate extends Component
                         'total_cost' => $ingredient->percentage / 100 * $ingredient->cost,
                     ];
                 })->toArray(),
+                'extra_costs' => $item->extraCosts->map(function ($extraCost) {
+                    return [
+                        'name' => $extraCost->name,
+                        'cost' => $extraCost->cost,
+                        'cost_type' => $extraCost->cost_type,
+                        'total_cost' => $extraCost->total_cost,
+                    ];
+                })->toArray(),
             ];
         })->toArray();
 
@@ -520,6 +580,10 @@ class OfferCreate extends Component
             'offerItems.*.ingredients.*.name' => 'required|string|max:255',
             'offerItems.*.ingredients.*.cost' => 'required|numeric|min:0',
             'offerItems.*.ingredients.*.percentage' => 'required|numeric|min:1|max:100',
+            'offerItems.*.extra_costs' => 'present|array',
+            'offerItems.*.extra_costs.*.name' => 'required|string|max:255',
+            'offerItems.*.extra_costs.*.cost' => 'required|numeric|min:0',
+            'offerItems.*.extra_costs.*.cost_type' => 'required|in:' . implode(',', OfferItem::CALC_TYPES),
             'offerItems.*.product_id' => 'required|exists:products,id',
             'offerItems.*.packing_id' => 'required|exists:packings,id',
             'offerItems.*.quantity_in_kgs' => 'required|numeric|min:1',
@@ -579,20 +643,40 @@ class OfferCreate extends Component
             'offerItems.*.ingredients.*.percentage.numeric' => 'Not a number',
             'offerItems.*.ingredients.*.percentage.min' => 'Not greater than 0',
             'offerItems.*.ingredients.*.percentage.max' => 'Not less than 100',
+            'offerItems.*.extra_costs.*.name.required' => 'Required',
+            'offerItems.*.extra_costs.*.name.string' => 'Not a string',
+            'offerItems.*.extra_costs.*.name.max' => 'Too long',
+            'offerItems.*.extra_costs.*.cost.required' => 'Required',
+            'offerItems.*.extra_costs.*.cost.numeric' => 'Not a number',
+            'offerItems.*.extra_costs.*.cost.min' => 'Not greater than 0',
+            'offerItems.*.extra_costs.*.cost_type.required' => 'Required',
+            'offerItems.*.extra_costs.*.cost_type.in' => 'Invalid cost type',
         ]);
 
         // if (!$this->validateIngredientsTotalPercentage()) return;
 
         try {
-            $offer = $this->offerService->createOffer(
-                $this->status,
-                $this->client_id,
-                $this->currency_id,
-                $this->currency_rate,
-                $this->offerItems,
-                $this->duplicate_of_id,
-                $this->notes
-            );
+            if ($this->edit_mode) {
+                $offer = $this->offerService->updateOffer(
+                    $this->offer,
+                    $this->status,
+                    $this->client_id,
+                    $this->currency_id,
+                    $this->currency_rate,
+                    $this->offerItems,
+                    $this->notes
+                );
+            } else {
+                $offer = $this->offerService->createOffer(
+                    $this->status,
+                    $this->client_id,
+                    $this->currency_id,
+                    $this->currency_rate,
+                    $this->offerItems,
+                    $this->duplicate_of_id,
+                    $this->notes
+                );
+            }
 
             $this->alert('success', 'Offer created successfully!');
             return redirect()->route('offers.show', $offer->id);

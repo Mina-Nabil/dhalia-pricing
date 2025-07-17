@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Offers\Offer;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\App;
 
 class OfferPolicy
 {
@@ -45,7 +46,7 @@ class OfferPolicy
      */
     public function create(User $user): bool
     {
-        return $user->is_admin || $user->id == 4;
+        return $user->is_admin || $user->id == 4 || App::environment('local');
     }
 
     /**
@@ -57,6 +58,16 @@ class OfferPolicy
     }
 
     public function updateNotes(User $user, Offer $offer): bool
+    {
+        return $user->is_admin || $user->id === $offer->user_id;
+    }
+
+    public function updateStatus(User $user, Offer $offer): bool
+    {
+        return $user->is_admin || $user->id === $offer->user_id;
+    }
+
+    public function addComment(User $user, Offer $offer): bool
     {
         return $user->is_admin || $user->id === $offer->user_id;
     }

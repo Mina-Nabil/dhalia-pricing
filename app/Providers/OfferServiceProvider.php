@@ -190,6 +190,9 @@ class OfferServiceProvider extends ServiceProvider
                     if (isset($offerItems[$key]['ingredients']) && count($offerItems[$key]['ingredients']) > 0) {
                         $item->ingredients()->createMany($offerItems[$key]['ingredients']);
                     }
+                    if (isset($offerItems[$key]['extra_costs']) && count($offerItems[$key]['extra_costs']) > 0) {
+                        $item->extraCosts()->createMany($offerItems[$key]['extra_costs']);
+                    }
                 }
                 $offer->refresh();
             });
@@ -260,6 +263,9 @@ class OfferServiceProvider extends ServiceProvider
                     if (isset($offerItems[$key]['ingredients']) && count($offerItems[$key]['ingredients']) > 0) {
                         $item->ingredients()->createMany($offerItems[$key]['ingredients']);
                     }
+                    if (isset($offerItems[$key]['extra_costs']) && count($offerItems[$key]['extra_costs']) > 0) {
+                        $item->extraCosts()->createMany($offerItems[$key]['extra_costs']);
+                    }
                 }
                 $offer->refresh();
             });
@@ -274,7 +280,7 @@ class OfferServiceProvider extends ServiceProvider
     public function setOfferStatus($id, $status)
     {
         $offer = $this->getOffer($id);
-        Gate::authorize('update-offer', $offer);
+        Gate::authorize('update-offer-status', $offer);
         $offer->status = $status;
         try {
             $offer->save();
@@ -298,6 +304,20 @@ class OfferServiceProvider extends ServiceProvider
         } catch (Exception $e) {
             report($e);
             throw new OfferManagementException('Failed to update offer notes');
+        }
+    }
+
+    public function addOfferComment($id, $comment)
+    {
+        $offer = $this->getOffer($id);
+        Gate::authorize('add-offer-comment', $offer);
+        try {
+            $offer->comments()->create(['comment' => $comment, 'user_id' => Auth::id()]);
+            AppLog::info('Offer comment added', "Offer $offer->code comment added", $offer);
+            return $offer;
+        } catch (Exception $e) {
+            report($e);
+            throw new OfferManagementException('Failed to add offer comment');
         }
     }
 
@@ -554,6 +574,8 @@ class OfferServiceProvider extends ServiceProvider
         Gate::define('create-offers', [OfferPolicy::class, 'create']);
         Gate::define('update-offer', [OfferPolicy::class, 'update']);
         Gate::define('update-offer-notes', [OfferPolicy::class, 'updateNotes']);
+        Gate::define('update-offer-status', [OfferPolicy::class, 'updateStatus']);
+        Gate::define('add-offer-comment', [OfferPolicy::class, 'addComment']);
         Gate::define('delete-offer', [OfferPolicy::class, 'delete']);
         Gate::define('can-export-offers', [OfferPolicy::class, 'canExport']);
     }

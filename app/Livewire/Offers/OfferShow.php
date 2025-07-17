@@ -21,6 +21,7 @@ class OfferShow extends Component
     public $offer;
     public $statuses = [];
     public $notes = '';
+    public $newComment = '';
 
     public function boot()
     {
@@ -113,6 +114,33 @@ class OfferShow extends Component
         } catch (Exception $e) {
             report($e);
             $this->alert('error', 'Failed to update notes: ' . $e->getMessage());
+        }
+    }
+
+    public function addComment()
+    {
+        try {
+            // Validate comment
+            $this->validate([
+                'newComment' => 'required|string|max:1000',
+            ]);
+            
+            // Add the comment using the service
+            $this->offer = $this->offerService->addOfferComment($this->offer->id, $this->newComment);
+            
+            // Clear the comment field
+            $this->newComment = '';
+            
+            $this->alert('success', 'Comment added successfully!');
+            $this->mount($this->offer_id);
+            
+        } catch (OfferManagementException $e) {
+            $this->alert('error', $e->getMessage());
+        } catch (AuthorizationException $e) {
+            $this->alert('error', 'You are not authorized to add comments to this offer.');
+        } catch (Exception $e) {
+            report($e);
+            $this->alert('error', 'Failed to add comment: ' . $e->getMessage());
         }
     }
 
