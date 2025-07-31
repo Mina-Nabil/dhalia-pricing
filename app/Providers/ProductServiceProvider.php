@@ -37,7 +37,7 @@ class ProductServiceProvider extends ServiceProvider
             Gate::authorize('view-product-list');
             AppLog::info('Product categories list viewed', 'Categories loaded');
         }
-        return $paginate ? $query->paginate($paginate) : $query->get();
+        return $paginate && !$forDropdown ? $query->paginate($paginate) : $query->get();
     }
 
     public function getCategory($id)
@@ -115,7 +115,7 @@ class ProductServiceProvider extends ServiceProvider
             Gate::authorize('view-product-list');
             AppLog::info('Products list viewed', 'Products loaded');
         }
-        return $paginate ? $query->paginate($paginate) : $query->get();
+        return $paginate && !$forDropdown ? $query->paginate($paginate) : $query->get();
     }
 
     public function getProduct($id)

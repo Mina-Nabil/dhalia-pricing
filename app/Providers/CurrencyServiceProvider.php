@@ -22,7 +22,7 @@ class CurrencyServiceProvider extends ServiceProvider
         $query = Currency::when($search !== null, function ($q) use ($search) {
             $q->bySearch($search);
         })->orderBy('name');
-        return $paginate ? $query->paginate($paginate) : $query->get();
+        return $paginate && !$forDropdown ? $query->paginate($paginate) : $query->get();
     }
 
     public function getCurrency($id)

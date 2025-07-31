@@ -22,7 +22,7 @@ class PackingServiceProvider extends ServiceProvider
             Gate::authorize('view-packing-list');
             AppLog::info('Packings list viewed', 'Packings loaded');
         }
-        return $paginate ? $query->paginate($paginate) : $query->get();
+        return $paginate && !$forDropdown ? $query->paginate($paginate) : $query->get();
     }
 
     public function getPacking($id, $authorize = true)

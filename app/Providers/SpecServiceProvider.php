@@ -19,13 +19,13 @@ class SpecServiceProvider extends ServiceProvider
             Gate::authorize('view-spec-list');
         }
         $query = Spec::query();
-        if ($search) {
-            $query->bySearch($search);
-        }
+
+        $query->when($search, fn($query) => $query->bySearch($search));
+
         if (!$forDropdown) {
             AppLog::info('Specs list viewed', 'Specs loaded');
         }
-        return $paginate ? $query->paginate($paginate) : $query->get();
+        return $paginate && !$forDropdown ? $query->paginate($paginate) : $query->get();
     }
 
     public function getSpec($id)
