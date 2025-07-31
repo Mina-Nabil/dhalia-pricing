@@ -77,7 +77,7 @@ class ProductServiceProvider extends ServiceProvider
 
     public function deleteCategory(ProductCategory $category)
     {
-        Gate::authorize('delete-product', $category);
+        Gate::authorize('delete-category', $category);
 
         // Check if category has products
         if ($category->products()->count() > 0) {
