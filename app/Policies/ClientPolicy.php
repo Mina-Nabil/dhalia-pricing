@@ -21,7 +21,7 @@ class ClientPolicy
      */
     public function view(User $user, Client $client): bool
     {
-        return $user->is_admin || $client->created_by_id == $user->id || $client->users->contains('user_id', $user->id);
+        return $user->is_admin || $client->created_by_id == $user->id || $client->users->contains('id', $user->id);
     }
 
     /**
@@ -37,7 +37,7 @@ class ClientPolicy
      */
     public function update(User $user, Client $client): bool
     {
-        return $user->is_admin || $client->created_by_id == $user->id || $client->users->contains('user_id', $user->id);
+        return $user->is_admin || $client->created_by_id == $user->id || $client->users->contains('id', $user->id);
     }
 
     public function updateUsers(User $user, Client $client): bool
