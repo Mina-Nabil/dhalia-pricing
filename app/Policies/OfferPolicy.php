@@ -46,7 +46,7 @@ class OfferPolicy
      */
     public function create(User $user): bool
     {
-        return $user->is_admin || $user->is_sales;
+        return $user->is_admin || $user->is_user;
     }
 
     /**
