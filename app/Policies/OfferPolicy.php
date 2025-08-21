@@ -46,7 +46,7 @@ class OfferPolicy
      */
     public function create(User $user): bool
     {
-        return $user->is_admin || $user->id == 4 || App::environment('local');
+        return $user->is_admin || $user->is_sales;
     }
 
     /**
